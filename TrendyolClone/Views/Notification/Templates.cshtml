@@ -1,0 +1,133 @@
+@model List<TrendyolClone.Models.BildirimSablonu>
+@{
+    ViewData["Title"] = "Bildirim Şablonları";
+}
+
+<div class="container my-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">
+                        <i class="fas fa-file-alt"></i> Bildirim Şablonları
+                    </h4>
+                    <a asp-action="CreateTemplate" class="btn btn-light btn-sm">
+                        <i class="fas fa-plus"></i> Yeni Şablon
+                    </a>
+                </div>
+                <div class="card-body">
+                    @if (TempData["Mesaj"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show">
+                            @TempData["Mesaj"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    @if (Model == null || !Model.Any())
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-file-alt fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">Henüz şablon bulunmuyor.</p>
+                            <a asp-action="CreateTemplate" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> İlk Şablonu Oluştur
+                            </a>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Kod</th>
+                                        <th>Ad</th>
+                                        <th>Tür</th>
+                                        <th>Durum</th>
+                                        <th>Oluşturma</th>
+                                        <th>İşlemler</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var sablon in Model)
+                                    {
+                                        <tr>
+                                            <td><code>@sablon.Kod</code></td>
+                                            <td>@sablon.Ad</td>
+                                            <td>
+                                                @if (sablon.Turu == TrendyolClone.Models.BildirimTuru.Email)
+                                                {
+                                                    <span class="badge bg-info">Email</span>
+                                                }
+                                                else if (sablon.Turu == TrendyolClone.Models.BildirimTuru.SMS)
+                                                {
+                                                    <span class="badge bg-success">SMS</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (sablon.AktifMi)
+                                                {
+                                                    <span class="badge bg-success">Aktif</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-secondary">Pasif</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <small>@sablon.OlusturmaTarihi.ToString("dd.MM.yyyy")</small>
+                                            </td>
+                                            <td>
+                                                <button type="button" class="btn btn-sm btn-outline-primary" 
+                                                        data-bs-toggle="modal" 
+                                                        data-bs-target="#detayModal@(sablon.Id)">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+
+                                        <!-- Detay Modal -->
+                                        <div class="modal fade" id="detayModal@(sablon.Id)" tabindex="-1">
+                                            <div class="modal-dialog modal-lg">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title">@sablon.Ad</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <div class="mb-3">
+                                                            <strong>Kod:</strong> <code>@sablon.Kod</code>
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <strong>Konu:</strong> @sablon.Konu
+                                                        </div>
+                                                        <div class="mb-3">
+                                                            <strong>İçerik:</strong>
+                                                            <div class="border p-3 mt-2 bg-light">
+                                                                <pre>@sablon.Icerik</pre>
+                                                            </div>
+                                                        </div>
+                                                        @if (!string.IsNullOrEmpty(sablon.Aciklama))
+                                                        {
+                                                            <div class="mb-3">
+                                                                <strong>Açıklama:</strong>
+                                                                <p>@sablon.Aciklama</p>
+                                                            </div>
+                                                        }
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

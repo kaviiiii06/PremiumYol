@@ -1,0 +1,271 @@
+@model List<TrendyolClone.Models.OdemeYontemiAyari>
+@{
+    ViewData["Title"] = "Ödeme Yöntemleri Yönetimi";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-credit-card me-2"></i>Ödeme Yöntemleri</h2>
+    <button class="btn btn-primary" onclick="showAddModal()">
+        <i class="fas fa-plus me-2"></i>Yeni Ödeme Yöntemi
+    </button>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Sıra</th>
+                                <th>Ad</th>
+                                <th>Tip</th>
+                                <th>Banka/IBAN</th>
+                                <th>Durum</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var yontem in Model)
+                            {
+                                <tr>
+                                    <td>@yontem.Sira</td>
+                                    <td>
+                                        <strong>@yontem.Ad</strong>
+                                        @if (!string.IsNullOrEmpty(yontem.Aciklama))
+                                        {
+                                            <br><small class="text-muted">@yontem.Aciklama</small>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (yontem.Tip == TrendyolClone.Models.OdemeYontemiTipi.Online)
+                                        {
+                                            <span class="badge bg-success">Online</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning text-dark">Offline</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(yontem.BankaAdi))
+                                        {
+                                            <div>
+                                                <strong>@yontem.BankaAdi</strong><br>
+                                                <small>@yontem.IbanNo</small><br>
+                                                <small class="text-muted">@yontem.HesapSahibi</small>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (yontem.Aktif)
+                                        {
+                                            <span class="badge bg-success">Aktif</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">Pasif</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary" onclick="editPaymentMethod(@yontem.Id)">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-warning" onclick="togglePaymentMethod(@yontem.Id)">
+                                            <i class="fas fa-toggle-on"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger" onclick="deletePaymentMethod(@yontem.Id)">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="paymentMethodModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">Yeni Ödeme Yöntemi</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="paymentMethodForm">
+                    <input type="hidden" id="paymentId" value="0">
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Ad *</label>
+                            <input type="text" class="form-control" id="paymentName" required>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Sıra *</label>
+                            <input type="number" class="form-control" id="paymentOrder" value="1" required>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Durum</label>
+                            <select class="form-select" id="paymentActive">
+                                <option value="true">Aktif</option>
+                                <option value="false">Pasif</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Açıklama</label>
+                        <textarea class="form-control" id="paymentDescription" rows="2"></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Tip *</label>
+                        <select class="form-select" id="paymentType" onchange="toggleBankFields()">
+                            <option value="1">Online (Kredi Kartı, Online Ödeme)</option>
+                            <option value="2">Offline (Havale/EFT, Kapıda Ödeme)</option>
+                        </select>
+                    </div>
+                    
+                    <div id="bankFields" style="display: none;">
+                        <h6 class="mb-3">Banka Bilgileri (Havale/EFT için)</h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Banka Adı</label>
+                                <input type="text" class="form-control" id="bankName">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Hesap Sahibi</label>
+                                <input type="text" class="form-control" id="accountHolder">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">IBAN</label>
+                            <input type="text" class="form-control" id="iban" placeholder="TR00 0000 0000 0000 0000 0000 00">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Ek Bilgi</label>
+                            <textarea class="form-control" id="extraInfo" rows="2" placeholder="Havale açıklamasına sipariş numaranızı yazınız."></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <button type="button" class="btn btn-primary" onclick="savePaymentMethod()">Kaydet</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function toggleBankFields() {
+            const type = document.getElementById('paymentType').value;
+            document.getElementById('bankFields').style.display = type === '2' ? 'block' : 'none';
+        }
+        
+        function showAddModal() {
+            document.getElementById('modalTitle').textContent = 'Yeni Ödeme Yöntemi';
+            document.getElementById('paymentMethodForm').reset();
+            document.getElementById('paymentId').value = '0';
+            document.getElementById('paymentOrder').value = '1';
+            toggleBankFields();
+            new bootstrap.Modal(document.getElementById('paymentMethodModal')).show();
+        }
+        
+        function editPaymentMethod(id) {
+            fetch(`/Admin/GetPaymentMethod/${id}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('modalTitle').textContent = 'Ödeme Yöntemini Düzenle';
+                    document.getElementById('paymentId').value = data.id;
+                    document.getElementById('paymentName').value = data.ad;
+                    document.getElementById('paymentDescription').value = data.aciklama || '';
+                    document.getElementById('paymentType').value = data.tip;
+                    document.getElementById('paymentOrder').value = data.sira;
+                    document.getElementById('paymentActive').value = data.aktif.toString();
+                    document.getElementById('bankName').value = data.bankaAdi || '';
+                    document.getElementById('iban').value = data.ibanNo || '';
+                    document.getElementById('accountHolder').value = data.hesapSahibi || '';
+                    document.getElementById('extraInfo').value = data.ekBilgi || '';
+                    toggleBankFields();
+                    new bootstrap.Modal(document.getElementById('paymentMethodModal')).show();
+                })
+                .catch(error => {
+                    showToast('Hata!', 'Ödeme yöntemi bilgileri yüklenemedi!', 'error');
+                });
+        }
+        
+        function savePaymentMethod() {
+            const data = {
+                Id: parseInt(document.getElementById('paymentId').value),
+                Ad: document.getElementById('paymentName').value,
+                Aciklama: document.getElementById('paymentDescription').value,
+                Tip: parseInt(document.getElementById('paymentType').value),
+                Sira: parseInt(document.getElementById('paymentOrder').value),
+                Aktif: document.getElementById('paymentActive').value === 'true',
+                BankaAdi: document.getElementById('bankName').value,
+                IbanNo: document.getElementById('iban').value,
+                HesapSahibi: document.getElementById('accountHolder').value,
+                EkBilgi: document.getElementById('extraInfo').value
+            };
+            
+            fetch('/Admin/SavePaymentMethod', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    bootstrap.Modal.getInstance(document.getElementById('paymentMethodModal')).hide();
+                    showToast('Başarılı!', result.message, 'success');
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showToast('Hata!', result.message, 'error');
+                }
+            })
+            .catch(error => {
+                showToast('Hata!', 'Bir hata oluştu!', 'error');
+            });
+        }
+        
+        function togglePaymentMethod(id) {
+            fetch(`/Admin/TogglePaymentMethod/${id}`, { method: 'POST' })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        showToast('Başarılı!', result.message, 'success');
+                        setTimeout(() => location.reload(), 1500);
+                    } else {
+                        showToast('Hata!', result.message, 'error');
+                    }
+                });
+        }
+        
+        function deletePaymentMethod(id) {
+            if (!confirm('Bu ödeme yöntemini silmek istediğinizden emin misiniz?')) return;
+            
+            fetch(`/Admin/DeletePaymentMethod/${id}`, { method: 'POST' })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        showToast('Başarılı!', result.message, 'success');
+                        setTimeout(() => location.reload(), 1500);
+                    } else {
+                        showToast('Hata!', result.message, 'error');
+                    }
+                });
+        }
+    </script>
+}

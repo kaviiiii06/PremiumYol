@@ -1,0 +1,254 @@
+@model TrendyolClone.Models.DTOs.SiparisDetayDto
+@{
+    ViewData["Title"] = $"Sipariş Detayı - {Model.SiparisNo}";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3><i class="fas fa-receipt me-2"></i>Sipariş Detayı</h3>
+                <a asp-action="Index" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left me-2"></i>Siparişlerime Dön
+                </a>
+            </div>
+
+            <!-- Sipariş Özeti -->
+            <div class="card mb-3">
+                <div class="card-header bg-primary text-white">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <h5 class="mb-0">@Model.SiparisNo</h5>
+                            <small>@Model.SiparisTarihi.ToString("dd MMMM yyyy HH:mm")</small>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <h4 class="mb-0">@Model.ToplamTutar.ToString("C")</h4>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-map-marker-alt me-2 text-primary"></i>Teslimat Adresi</h6>
+                            <p class="text-muted">@Model.TeslimatAdresi</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6><i class="fas fa-credit-card me-2 text-success"></i>Ödeme Yöntemi</h6>
+                            <p class="text-muted">@Model.OdemeYontemi</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sipariş Durumu -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-tasks me-2"></i>Sipariş Durumu</h5>
+                </div>
+                <div class="card-body">
+                    <div class="order-timeline">
+                        @foreach (var durum in Model.DurumGecmisi)
+                        {
+                            var isActive = durum.Durum == Model.Durum;
+                            <div class="timeline-item @(isActive ? "active" : "")">
+                                <div class="timeline-marker">
+                                    @switch (durum.Durum)
+                                    {
+                                        case TrendyolClone.Models.SiparisDurumu.Beklemede:
+                                            <i class="fas fa-clock"></i>
+                                            break;
+                                        case TrendyolClone.Models.SiparisDurumu.Onaylandi:
+                                            <i class="fas fa-check"></i>
+                                            break;
+                                        case TrendyolClone.Models.SiparisDurumu.Hazirlaniyor:
+                                            <i class="fas fa-box"></i>
+                                            break;
+                                        case TrendyolClone.Models.SiparisDurumu.Kargoda:
+                                            <i class="fas fa-truck"></i>
+                                            break;
+                                        case TrendyolClone.Models.SiparisDurumu.TeslimEdildi:
+                                            <i class="fas fa-check-circle"></i>
+                                            break;
+                                        case TrendyolClone.Models.SiparisDurumu.IptalEdildi:
+                                            <i class="fas fa-times-circle"></i>
+                                            break;
+                                    }
+                                </div>
+                                <div class="timeline-content">
+                                    <h6>@durum.Durum</h6>
+                                    <small class="text-muted">@durum.Tarih.ToString("dd MMM yyyy HH:mm")</small>
+                                    @if (!string.IsNullOrEmpty(durum.Aciklama))
+                                    {
+                                        <p class="mb-0 mt-1"><small>@durum.Aciklama</small></p>
+                                    }
+                                    @if (!string.IsNullOrEmpty(durum.DegistirenKisi))
+                                    {
+                                        <small class="text-muted">@durum.DegistirenKisi</small>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kargo Bilgisi -->
+            @if (!string.IsNullOrEmpty(Model.KargoTakipNo))
+            {
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-truck me-2"></i>Kargo Bilgileri</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <strong>Kargo Firması:</strong>
+                                <p>@Model.KargoFirmasi</p>
+                            </div>
+                            <div class="col-md-4">
+                                <strong>Takip No:</strong>
+                                <p>@Model.KargoTakipNo</p>
+                            </div>
+                            <div class="col-md-4">
+                                @if (Model.TahminiTeslimatTarihi.HasValue)
+                                {
+                                    <strong>Tahmini Teslimat:</strong>
+                                    <p>@Model.TahminiTeslimatTarihi.Value.ToString("dd MMMM yyyy")</p>
+                                }
+                            </div>
+                        </div>
+                        <a asp-action="Track" asp-route-id="@Model.Id" class="btn btn-primary">
+                            <i class="fas fa-map-marker-alt me-2"></i>Kargo Takip
+                        </a>
+                    </div>
+                </div>
+            }
+
+            <!-- Ürünler -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-shopping-bag me-2"></i>Sipariş Ürünleri</h5>
+                </div>
+                <div class="card-body">
+                    @foreach (var urun in Model.Urunler)
+                    {
+                        <div class="d-flex align-items-center mb-3 pb-3 border-bottom">
+                            <img src="@(string.IsNullOrEmpty(urun.ResimUrl) ? "/images/no-image.jpg" : urun.ResimUrl)" 
+                                 alt="@urun.UrunAdi" 
+                                 class="me-3" 
+                                 style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">@urun.UrunAdi</h6>
+                                <p class="text-muted mb-0">
+                                    @urun.Adet adet x @urun.BirimFiyat.ToString("C")
+                                </p>
+                            </div>
+                            <div class="text-end">
+                                <h5 class="text-primary mb-0">@urun.ToplamFiyat.ToString("C")</h5>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Aksiyonlar -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex gap-2 flex-wrap">
+                        @if (!string.IsNullOrEmpty(Model.FaturaNo))
+                        {
+                            <a asp-action="Invoice" asp-route-id="@Model.Id" class="btn btn-outline-secondary">
+                                <i class="fas fa-file-invoice me-2"></i>Fatura Görüntüle
+                            </a>
+                        }
+
+                        @if (Model.Durum == TrendyolClone.Models.SiparisDurumu.TeslimEdildi && !Model.IadeTalebiVarMi)
+                        {
+                            <a asp-action="Return" asp-route-id="@Model.Id" class="btn btn-warning">
+                                <i class="fas fa-undo me-2"></i>İade Talebi Oluştur
+                            </a>
+                        }
+
+                        @if (Model.IadeTalebiVarMi)
+                        {
+                            <a asp-action="Returns" class="btn btn-info">
+                                <i class="fas fa-list me-2"></i>İade Taleplerim
+                            </a>
+                        }
+
+                        @if (Model.Durum == TrendyolClone.Models.SiparisDurumu.Beklemede || Model.Durum == TrendyolClone.Models.SiparisDurumu.Onaylandi)
+                        {
+                            <button class="btn btn-danger" id="cancelOrder">
+                                <i class="fas fa-times me-2"></i>Siparişi İptal Et
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <style>
+        .order-timeline {
+            position: relative;
+            padding-left: 40px;
+        }
+        .timeline-item {
+            position: relative;
+            padding-bottom: 30px;
+        }
+        .timeline-item:not(:last-child)::before {
+            content: '';
+            position: absolute;
+            left: -25px;
+            top: 30px;
+            width: 2px;
+            height: calc(100% - 10px);
+            background: #dee2e6;
+        }
+        .timeline-marker {
+            position: absolute;
+            left: -35px;
+            top: 0;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #dee2e6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        .timeline-item.active .timeline-marker {
+            background: #0d6efd;
+        }
+        .timeline-item.active .timeline-content h6 {
+            color: #0d6efd;
+            font-weight: bold;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $('#cancelOrder').click(function() {
+                const neden = prompt('İptal nedeni (opsiyonel):');
+                
+                if (confirm('Siparişi iptal etmek istediğinizden emin misiniz?')) {
+                    $.post('@Url.Action("Cancel")', {
+                        id: @Model.Id,
+                        neden: neden || 'Kullanıcı isteği'
+                    }, function(response) {
+                        if (response.success) {
+                            alert(response.message);
+                            location.reload();
+                        } else {
+                            alert(response.message);
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+}

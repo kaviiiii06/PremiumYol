@@ -1,0 +1,220 @@
+@model IEnumerable<TrendyolClone.Models.DTOs.YorumListeDto>
+@{
+    ViewData["Title"] = "Yorum Yönetimi";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col-12">
+            <h2>Yorum Yönetimi</h2>
+        </div>
+    </div>
+
+    <!-- Filtreler -->
+    <div class="card mb-3">
+        <div class="card-body">
+            <div class="btn-group" role="group">
+                <a href="@Url.Action("Index", new { durum = "Bekleyen" })" 
+                   class="btn btn-outline-primary @(ViewBag.Durum == "Bekleyen" ? "active" : "")">
+                    Onay Bekleyenler
+                </a>
+                <a href="@Url.Action("Index", new { durum = "Onaylanan" })" 
+                   class="btn btn-outline-success @(ViewBag.Durum == "Onaylanan" ? "active" : "")">
+                    Onaylananlar
+                </a>
+                <a href="@Url.Action("Index", new { durum = "Reddedilen" })" 
+                   class="btn btn-outline-danger @(ViewBag.Durum == "Reddedilen" ? "active" : "")">
+                    Reddedilenler
+                </a>
+                <a href="@Url.Action("Reports")" class="btn btn-outline-warning">
+                    Raporlar
+                </a>
+                <a href="@Url.Action("Statistics")" class="btn btn-outline-info">
+                    İstatistikler
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Yorumlar Tablosu -->
+    @if (Model != null && Model.Any())
+    {
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Ürün</th>
+                        <th>Kullanıcı</th>
+                        <th>Puan</th>
+                        <th>Yorum</th>
+                        <th>Tarih</th>
+                        <th>Durum</th>
+                        <th>İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var yorum in Model)
+                    {
+                        <tr>
+                            <td>
+                                <a href="@Url.Action("Details", "Product", new { id = yorum.UrunId })">
+                                    @yorum.UrunAdi
+                                </a>
+                            </td>
+                            <td>@yorum.KullaniciAdi</td>
+                            <td>
+                                <span class="text-warning">
+                                    @for (int i = 1; i <= 5; i++)
+                                    {
+                                        <i class="bi bi-star@(i <= yorum.GenelPuan ? "-fill" : "")"></i>
+                                    }
+                                </span>
+                            </td>
+                            <td>
+                                <div style="max-width: 300px; overflow: hidden; text-overflow: ellipsis;">
+                                    @yorum.Yorum
+                                </div>
+                                @if (yorum.Resimler != null && yorum.Resimler.Any())
+                                {
+                                    <small class="text-muted">
+                                        <i class="bi bi-image"></i> @yorum.Resimler.Count() resim
+                                    </small>
+                                }
+                            </td>
+                            <td>@yorum.OlusturmaTarihi.ToString("dd.MM.yyyy HH:mm")</td>
+                            <td>
+                                @if (yorum.OnaylandiMi)
+                                {
+                                    <span class="badge bg-success">Onaylandı</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning">Bekliyor</span>
+                                }
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    @if (!yorum.OnaylandiMi)
+                                    {
+                                        <button class="btn btn-success" onclick="yorumOnayla(@yorum.Id)">
+                                            <i class="bi bi-check"></i>
+                                        </button>
+                                        <button class="btn btn-warning" onclick="yorumReddet(@yorum.Id)">
+                                            <i class="bi bi-x"></i>
+                                        </button>
+                                    }
+                                    <button class="btn btn-danger" onclick="yorumSil(@yorum.Id)">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Sayfalama -->
+        <nav>
+            <ul class="pagination justify-content-center">
+                <li class="page-item @(ViewBag.Sayfa <= 1 ? "disabled" : "")">
+                    <a class="page-link" href="@Url.Action("Index", new { durum = ViewBag.Durum, sayfa = ViewBag.Sayfa - 1 })">Önceki</a>
+                </li>
+                <li class="page-item active">
+                    <span class="page-link">@ViewBag.Sayfa</span>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="@Url.Action("Index", new { durum = ViewBag.Durum, sayfa = ViewBag.Sayfa + 1 })">Sonraki</a>
+                </li>
+            </ul>
+        </nav>
+    }
+    else
+    {
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> Gösterilecek yorum bulunmuyor.
+        </div>
+    }
+</div>
+
+<!-- Reddetme Modal -->
+<div class="modal fade" id="redModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Yorumu Reddet</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="redYorumId" />
+                <div class="mb-3">
+                    <label class="form-label">Reddetme Sebebi</label>
+                    <textarea class="form-control" id="redSebep" rows="3"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <button type="button" class="btn btn-warning" onclick="redOnay()">Reddet</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    function yorumOnayla(yorumId) {
+        if (!confirm('Bu yorumu onaylamak istediğinizden emin misiniz?')) return;
+        
+        fetch('@Url.Action("Approve")', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ yorumId: yorumId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message);
+            if (data.success) location.reload();
+        });
+    }
+    
+    function yorumReddet(yorumId) {
+        document.getElementById('redYorumId').value = yorumId;
+        new bootstrap.Modal(document.getElementById('redModal')).show();
+    }
+    
+    function redOnay() {
+        var yorumId = document.getElementById('redYorumId').value;
+        var sebep = document.getElementById('redSebep').value;
+        
+        fetch('@Url.Action("Reject")', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ yorumId: yorumId, sebep: sebep })
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message);
+            if (data.success) {
+                bootstrap.Modal.getInstance(document.getElementById('redModal')).hide();
+                location.reload();
+            }
+        });
+    }
+    
+    function yorumSil(yorumId) {
+        if (!confirm('Bu yorumu kalıcı olarak silmek istediğinizden emin misiniz?')) return;
+        
+        fetch('@Url.Action("Delete")', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ yorumId: yorumId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message);
+            if (data.success) location.reload();
+        });
+    }
+</script>
+}

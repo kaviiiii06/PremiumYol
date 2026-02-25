@@ -1,0 +1,70 @@
+@{
+    ViewData["Title"] = "Bildirim Gönder";
+}
+
+<div class="container my-5">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-paper-plane"></i> Bildirim Gönder
+                    </h4>
+                </div>
+                <div class="card-body">
+                    @if (TempData["Mesaj"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show">
+                            @TempData["Mesaj"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+                    @if (TempData["Hata"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show">
+                            @TempData["Hata"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    <form asp-action="Send" method="post">
+                        <div class="mb-3">
+                            <label class="form-label">Bildirim Türü</label>
+                            <select name="tur" class="form-select" required>
+                                <option value="email">Email</option>
+                                <option value="sms">SMS</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Hedef Email (Opsiyonel)</label>
+                            <input type="email" name="hedefEmail" class="form-control" 
+                                   placeholder="Boş bırakırsanız tüm kullanıcılara gönderilir">
+                            <small class="text-muted">Belirli bir kullanıcıya göndermek için email girin</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Başlık</label>
+                            <input type="text" name="baslik" class="form-control" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">İçerik</label>
+                            <textarea name="icerik" class="form-control" rows="6" required></textarea>
+                            <small class="text-muted">HTML etiketleri kullanabilirsiniz</small>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i> Gönder
+                            </button>
+                            <a asp-controller="Admin" asp-action="Dashboard" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left"></i> Geri Dön
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

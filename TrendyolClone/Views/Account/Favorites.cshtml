@@ -1,0 +1,152 @@
+﻿@model List<TrendyolClone.Models.Favori>
+@{
+    ViewData["Title"] = "Favorilerim";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3><i class="fas fa-heart me-2 text-danger"></i>Favorilerim (@Model.Count)</h3>
+                <a asp-action="Profile" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left me-2"></i>Hesabıma Dön
+                </a>
+            </div>
+
+            @if (Model.Any())
+            {
+                <div class="row">
+                    @foreach (var Favori in Model)
+                    {
+                        <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                            <div class="card h-100 Urun-card">
+                                <div class="position-relative">
+                                    <a asp-controller="Urun" asp-action="Details" asp-route-id="@Favori.Urun.Id">
+                                        <img src="@Favori.Urun.ResimUrl" 
+                                             class="card-img-top" 
+                                             alt="@Favori.Urun.Ad" 
+                                             style="height: 200px; object-fit: cover;">
+                                    </a>
+                                    <button class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2 remove-Favori" 
+                                            data-Urun-id="@Favori.Urun.Id">
+                                        <i class="fas fa-heart"></i>
+                                    </button>
+                                    @if (Favori.Urun.IndirimliFiyat.HasValue)
+                                    {
+                                        <span class="badge bg-danger position-absolute top-0 start-0 m-2">
+                                            %@(((Favori.Urun.Fiyat - Favori.Urun.IndirimliFiyat.Value) / Favori.Urun.Fiyat * 100).ToString("F0")) İndirim
+                                        </span>
+                                    }
+                                </div>
+                                <div class="card-body">
+                                    <a asp-controller="Urun" asp-action="Details" asp-route-id="@Favori.Urun.Id" class="text-decoration-none">
+                                        <h6 class="card-title">@Favori.Urun.Ad</h6>
+                                    </a>
+                                    <p class="text-muted small mb-2">@Favori.Urun.Marka</p>
+                                    <p class="text-muted small mb-2">
+                                        <i class="fas fa-tag me-1"></i>@Favori.Urun.Kategori?.Ad
+                                    </p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        @if (Favori.Urun.IndirimliFiyat.HasValue)
+                                        {
+                                            <div>
+                                                <span class="fw-bold text-danger">@Favori.Urun.IndirimliFiyat.Value.ToString("C")</span>
+                                                <br>
+                                                <small class="text-decoration-line-through text-muted">@Favori.Urun.Fiyat.ToString("C")</small>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span class="fw-bold text-primary">@Favori.Urun.Fiyat.ToString("C")</span>
+                                        }
+                                        @if (Favori.Urun.Stok > 0)
+                                        {
+                                            <button class="btn btn-sm btn-primary add-to-cart" data-Urun-id="@Favori.Urun.Id">
+                                                <i class="fas fa-shopping-cart"></i>
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn btn-sm btn-secondary" disabled>
+                                                <i class="fas fa-times"></i> Stokta Yok
+                                            </button>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="col-12 text-center py-5">
+                    <i class="fas fa-heart-broken fa-4x text-muted mb-3"></i>
+                    <h4>Henüz favori ürününüz yok</h4>
+                    <p class="text-muted">Beğendiğiniz ürünleri favorilere ekleyerek daha sonra kolayca bulabilirsiniz.</p>
+                    <a asp-controller="Urun" asp-action="Index" class="btn btn-primary">
+                        <i class="fas fa-shopping-bag me-2"></i>Ürünleri Keşfet
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Favoriden çıkar
+        $('.remove-Favori').click(function() {
+            var UrunId = $(this).data('Urun-id');
+            var button = $(this);
+            
+            $.post('@Url.Action("RemoveFromFavorites", "Account")', { UrunId: UrunId }, function(data) {
+                if (data.success) {
+                    button.closest('.col-lg-3').fadeOut(300, function() {
+                        $(this).remove();
+                        location.reload();
+                    });
+                    showToast('Başarılı!', data.message, 'success');
+                } else {
+                    showToast('Hata!', data.message, 'error');
+                }
+            });
+        });
+
+        // Sepete ekle
+        $('.add-to-cart').click(function() {
+            var UrunId = $(this).data('Urun-id');
+            
+            $.post('@Url.Action("AddToCart", "Urun")', { UrunId: UrunId, Miktar: 1 }, function(data) {
+                if (data.success) {
+                    $('#cart-count').text(data.cartCount);
+                    showToast('Başarılı!', data.message, 'success');
+                } else {
+                    showToast('Hata!', data.message, 'error');
+                }
+            });
+        });
+
+        function showToast(title, message, type) {
+            var bgClass = type === 'success' ? 'bg-success' : 'bg-danger';
+            var iconClass = type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle';
+            
+            var toast = $('<div class="toast position-fixed top-0 end-0 m-3" Rol="alert" style="z-index: 1055;">' +
+                '<div class="toast-header ' + bgClass + ' text-white">' +
+                '<i class="' + iconClass + ' me-2"></i>' +
+                '<strong class="me-auto">' + title + '</strong>' +
+                '<button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>' +
+                '</div>' +
+                '<div class="toast-body">' + message + '</div>' +
+                '</div>');
+            
+            $('body').append(toast);
+            var bsToast = new bootstrap.Toast(toast[0], { delay: 3000 });
+            bsToast.show();
+            
+            toast.on('hidden.bs.toast', function() {
+                $(this).remove();
+            });
+        }
+    </script>
+}

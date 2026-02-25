@@ -1,0 +1,327 @@
+@model TrendyolClone.Models.DTOs.DashboardDto
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<div class="container-fluid my-4">
+    <!-- İstatistik Kartları -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-0">Bugünkü Satış</h6>
+                            <h3 class="mb-0">₺@Model.Istatistikler.BugunkuSatis.ToString("N2")</h3>
+                            <small>@Model.Istatistikler.BugunkuSiparisSayisi sipariş</small>
+                        </div>
+                        <div>
+                            <i class="fas fa-shopping-cart fa-3x opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-0">Aylık Satış</h6>
+                            <h3 class="mb-0">₺@Model.Istatistikler.AylikSatis.ToString("N2")</h3>
+                            <small>
+                                @if (Model.Istatistikler.SatisArtisi >= 0)
+                                {
+                                    <i class="fas fa-arrow-up"></i> <text>%@Model.Istatistikler.SatisArtisi.ToString("N1")</text>
+                                }
+                                else
+                                {
+                                    <i class="fas fa-arrow-down"></i> <text>%@Math.Abs(Model.Istatistikler.SatisArtisi).ToString("N1")</text>
+                                }
+                            </small>
+                        </div>
+                        <div>
+                            <i class="fas fa-chart-line fa-3x opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-0">Bekleyen Sipariş</h6>
+                            <h3 class="mb-0">@Model.Istatistikler.BekleyenSiparis</h3>
+                            <small>İşlem bekliyor</small>
+                        </div>
+                        <div>
+                            <i class="fas fa-clock fa-3x opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-0">Toplam Kullanıcı</h6>
+                            <h3 class="mb-0">@Model.Istatistikler.ToplamKullanici</h3>
+                            <small>@Model.Istatistikler.AktifKullanici aktif</small>
+                        </div>
+                        <div>
+                            <i class="fas fa-users fa-3x opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Uyarı Kartları -->
+    @if (Model.Istatistikler.DusukStokUrun > 0 || Model.Istatistikler.BekleyenIade > 0)
+    {
+        <div class="row mb-4">
+            @if (Model.Istatistikler.DusukStokUrun > 0)
+            {
+                <div class="col-md-6 mb-3">
+                    <div class="alert alert-warning d-flex align-items-center">
+                        <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
+                        <div>
+                            <strong>Stok Uyarısı!</strong><br>
+                            <span>@Model.Istatistikler.DusukStokUrun ürünün stoğu düşük, @Model.Istatistikler.TukenenUrun ürün tükendi.</span>
+                            <a asp-controller="AdminStock" asp-action="Alerts" class="alert-link ms-2">Detayları Gör</a>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            @if (Model.Istatistikler.BekleyenIade > 0)
+            {
+                <div class="col-md-6 mb-3">
+                    <div class="alert alert-info d-flex align-items-center">
+                        <i class="fas fa-undo fa-2x me-3"></i>
+                        <div>
+                            <strong>İade Talebi!</strong><br>
+                            <span>@Model.Istatistikler.BekleyenIade adet iade talebi bekliyor.</span>
+                            <a asp-controller="AdminOrder" asp-action="Returns" class="alert-link ms-2">İadeleri Gör</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    <div class="row">
+        <!-- Satış Grafiği -->
+        <div class="col-md-8 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-area"></i> Son 30 Gün Satış Grafiği
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="salesChart" height="80"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Popüler Ürünler -->
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-fire"></i> Popüler Ürünler
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        @foreach (var urun in Model.PopulerUrunler.Take(5))
+                        {
+                            <div class="list-group-item">
+                                <div class="d-flex align-items-center">
+                                    <img src="@urun.ResimUrl" alt="@urun.UrunAdi" class="rounded" style="width: 50px; height: 50px; object-fit: cover;">
+                                    <div class="ms-3 flex-grow-1">
+                                        <h6 class="mb-0">@urun.UrunAdi</h6>
+                                        <small class="text-muted">@urun.SatisSayisi adet satıldı</small>
+                                    </div>
+                                    <div class="text-end">
+                                        <strong>₺@urun.ToplamGelir.ToString("N2")</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Son Siparişler -->
+        <div class="col-md-8 mb-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-shopping-bag"></i> Son Siparişler
+                    </h5>
+                    <a asp-controller="AdminOrder" asp-action="Index" class="btn btn-sm btn-primary">
+                        Tümünü Gör
+                    </a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Sipariş No</th>
+                                    <th>Müşteri</th>
+                                    <th>Tutar</th>
+                                    <th>Durum</th>
+                                    <th>Tarih</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var siparis in Model.SonSiparisler)
+                                {
+                                    <tr>
+                                        <td><strong>@siparis.SiparisNo</strong></td>
+                                        <td>@siparis.KullaniciAdi</td>
+                                        <td>₺@siparis.ToplamTutar.ToString("N2")</td>
+                                        <td>
+                                            <span class="badge bg-info">@siparis.Durum</span>
+                                        </td>
+                                        <td>
+                                            <small>@siparis.Tarih.ToString("dd.MM.yyyy HH:mm")</small>
+                                        </td>
+                                        <td>
+                                            <a asp-controller="AdminOrder" asp-action="Details" asp-route-id="@siparis.SiparisId" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stok Uyarıları ve Yeni Kullanıcılar -->
+        <div class="col-md-4 mb-4">
+            <!-- Stok Uyarıları -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-exclamation-circle"></i> Stok Uyarıları
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        @foreach (var uyari in Model.StokUyarilari.Take(5))
+                        {
+                            <div class="list-group-item">
+                                <div class="d-flex align-items-center">
+                                    <img src="@uyari.ResimUrl" alt="@uyari.UrunAdi" class="rounded" style="width: 40px; height: 40px; object-fit: cover;">
+                                    <div class="ms-2 flex-grow-1">
+                                        <h6 class="mb-0 small">@uyari.UrunAdi</h6>
+                                        <small class="text-danger">
+                                            <i class="fas fa-box"></i> @uyari.MevcutStok adet
+                                        </small>
+                                    </div>
+                                    <span class="badge bg-danger">@uyari.UyariSeviyesi</span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Yeni Kullanıcılar -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user-plus"></i> Yeni Kullanıcılar
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        @foreach (var kullanici in Model.YeniKullanicilar.Take(5))
+                        {
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-0">@kullanici.AdSoyad</h6>
+                                        <small class="text-muted">@kullanici.Email</small>
+                                    </div>
+                                    <small class="text-muted">
+                                        @kullanici.KayitTarihi.ToString("dd.MM.yyyy")
+                                    </small>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script>
+        // Satış Grafiği
+        const salesData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.GunlukSatislar));
+        
+        const ctx = document.getElementById('salesChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: salesData.map(d => new Date(d.Tarih).toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit' })),
+                datasets: [{
+                    label: 'Satış (₺)',
+                    data: salesData.map(d => d.Tutar),
+                    borderColor: 'rgb(75, 192, 192)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return '₺' + context.parsed.y.toLocaleString('tr-TR', { minimumFractionDigits: 2 });
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return '₺' + value.toLocaleString('tr-TR');
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+}

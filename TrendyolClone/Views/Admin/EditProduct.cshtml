@@ -1,0 +1,139 @@
+﻿@model TrendyolClone.Models.Urun
+@{
+    ViewData["Title"] = "Ürün Düzenle";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-edit me-2"></i>Ürün Düzenle</h2>
+    <a asp-action="Products" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Geri Dön
+    </a>
+</div>
+
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" Rol="alert">
+        <i class="fas fa-exclamation-circle me-2"></i>@ViewBag.Error
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="card">
+    <div class="card-body">
+        <form method="post" asp-action="EditProduct">
+            <input type="hidden" asp-for="Id" />
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">
+                        <i class="fas fa-tag me-1 text-primary"></i>Ürün Adı
+                    </label>
+                    <input type="text" class="form-control" asp-for="Ad" required>
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">
+                        <i class="fas fa-list me-1 text-primary"></i>Kategori
+                    </label>
+                    <select class="form-select" asp-for="KategoriId" required>
+                        <option value="">Kategori Seçin</option>
+                        @foreach (var Kategori in (List<TrendyolClone.Models.Kategori>)ViewBag.Categories)
+                        {
+                            <option value="@Kategori.Id" selected="@(Kategori.Id == Model.KategoriId)">@Kategori.Ad</option>
+                        }
+                    </select>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-bold">
+                    <i class="fas fa-align-left me-1 text-primary"></i>Açıklama
+                </label>
+                <textarea class="form-control" asp-for="Aciklama" rows="4" required></textarea>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label fw-bold">
+                        <i class="fas fa-lira-sign me-1 text-primary"></i>Fiyat
+                    </label>
+                    <input type="number" class="form-control" asp-for="Fiyat" step="0.01" min="0" required>
+                </div>
+                
+                <div class="col-md-4 mb-3">
+                    <label class="form-label fw-bold">
+                        <i class="fas fa-percentage me-1 text-danger"></i>İndirimli Fiyat
+                    </label>
+                    <input type="number" class="form-control" asp-for="IndirimliFiyat" step="0.01" min="0">
+                    <small class="text-muted">Opsiyonel</small>
+                </div>
+                
+                <div class="col-md-4 mb-3">
+                    <label class="form-label fw-bold">
+                        <i class="fas fa-boxes me-1 text-primary"></i>Stok
+                    </label>
+                    <input type="number" class="form-control" asp-for="Stok" min="0" required>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">
+                        <i class="fas fa-copyright me-1 text-primary"></i>Marka
+                    </label>
+                    <input type="text" class="form-control" asp-for="Marka">
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">
+                        <i class="fas fa-image me-1 text-primary"></i>Resim URL
+                    </label>
+                    <input type="url" class="form-control" asp-for="ResimUrl" placeholder="https://example.com/image.jpg">
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">
+                        <i class="fas fa-star me-1 text-warning"></i>Puan
+                    </label>
+                    <input type="number" class="form-control" asp-for="Puan" step="0.1" min="0" max="5">
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">
+                        <i class="fas fa-comment me-1 text-info"></i>Yorum Sayısı
+                    </label>
+                    <input type="number" class="form-control" asp-for="YorumSayisi" min="0">
+                </div>
+            </div>
+
+            <div class="d-flex gap-2 mt-4">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save me-2"></i>Değişiklikleri Kaydet
+                </button>
+                <a asp-action="Products" class="btn btn-outline-secondary">
+                    <i class="fas fa-times me-2"></i>İptal
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .form-control:focus, .form-select:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+    
+    .btn-primary {
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        border: none;
+    }
+    
+    .btn-primary:hover {
+        background: linear-gradient(45deg, #764ba2, #667eea);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+</style>

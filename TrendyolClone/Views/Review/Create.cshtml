@@ -1,0 +1,162 @@
+@model TrendyolClone.Models.DTOs.YorumEkleDto
+@{
+    ViewData["Title"] = "Yorum Yaz";
+}
+
+<div class="container my-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Ürün Yorumu Yaz</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create" method="post" enctype="multipart/form-data">
+                        <input type="hidden" asp-for="UrunId" value="@ViewBag.UrunId" />
+                        <input type="hidden" asp-for="SiparisId" value="@ViewBag.SiparisId" />
+                        
+                        <!-- Genel Puan -->
+                        <div class="mb-3">
+                            <label class="form-label">Genel Değerlendirme <span class="text-danger">*</span></label>
+                            <div class="star-rating" data-target="GenelPuan">
+                                <i class="bi bi-star" data-value="1"></i>
+                                <i class="bi bi-star" data-value="2"></i>
+                                <i class="bi bi-star" data-value="3"></i>
+                                <i class="bi bi-star" data-value="4"></i>
+                                <i class="bi bi-star" data-value="5"></i>
+                            </div>
+                            <input type="hidden" asp-for="GenelPuan" id="GenelPuan" />
+                            <span asp-validation-for="GenelPuan" class="text-danger"></span>
+                        </div>
+
+                        <!-- Ürün Kalitesi -->
+                        <div class="mb-3">
+                            <label class="form-label">Ürün Kalitesi</label>
+                            <div class="star-rating" data-target="UrunKalitesiPuan">
+                                <i class="bi bi-star" data-value="1"></i>
+                                <i class="bi bi-star" data-value="2"></i>
+                                <i class="bi bi-star" data-value="3"></i>
+                                <i class="bi bi-star" data-value="4"></i>
+                                <i class="bi bi-star" data-value="5"></i>
+                            </div>
+                            <input type="hidden" asp-for="UrunKalitesiPuan" id="UrunKalitesiPuan" />
+                        </div>
+
+                        <!-- Fiyat/Performans -->
+                        <div class="mb-3">
+                            <label class="form-label">Fiyat/Performans</label>
+                            <div class="star-rating" data-target="FiyatPerformansPuan">
+                                <i class="bi bi-star" data-value="1"></i>
+                                <i class="bi bi-star" data-value="2"></i>
+                                <i class="bi bi-star" data-value="3"></i>
+                                <i class="bi bi-star" data-value="4"></i>
+                                <i class="bi bi-star" data-value="5"></i>
+                            </div>
+                            <input type="hidden" asp-for="FiyatPerformansPuan" id="FiyatPerformansPuan" />
+                        </div>
+
+                        <!-- Yorum Metni -->
+                        <div class="mb-3">
+                            <label asp-for="Yorum" class="form-label">Yorumunuz <span class="text-danger">*</span></label>
+                            <textarea asp-for="Yorum" class="form-control" rows="5" placeholder="Ürün hakkındaki düşüncelerinizi paylaşın..."></textarea>
+                            <span asp-validation-for="Yorum" class="text-danger"></span>
+                        </div>
+
+                        <!-- Resim Yükleme -->
+                        <div class="mb-3">
+                            <label class="form-label">Fotoğraflar (Opsiyonel)</label>
+                            <input type="file" class="form-control" name="resimler" multiple accept="image/*" />
+                            <small class="text-muted">En fazla 5 fotoğraf yükleyebilirsiniz.</small>
+                        </div>
+
+                        <!-- Video URL -->
+                        <div class="mb-3">
+                            <label asp-for="VideoUrl" class="form-label">Video URL (Opsiyonel)</label>
+                            <input asp-for="VideoUrl" class="form-control" placeholder="https://youtube.com/..." />
+                            <span asp-validation-for="VideoUrl" class="text-danger"></span>
+                        </div>
+
+                        <!-- Tavsiye Eder misiniz? -->
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input asp-for="TavsiyeEderMi" class="form-check-input" type="checkbox" />
+                                <label asp-for="TavsiyeEderMi" class="form-check-label">
+                                    Bu ürünü tavsiye ederim
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">Yorumu Gönder</button>
+                            <a href="javascript:history.back()" class="btn btn-secondary">İptal</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        // Yıldız rating sistemi
+        document.querySelectorAll('.star-rating').forEach(rating => {
+            const targetId = rating.getAttribute('data-target');
+            const stars = rating.querySelectorAll('i');
+            
+            stars.forEach(star => {
+                star.addEventListener('click', function() {
+                    const value = this.getAttribute('data-value');
+                    document.getElementById(targetId).value = value;
+                    
+                    // Yıldızları güncelle
+                    stars.forEach((s, index) => {
+                        if (index < value) {
+                            s.classList.remove('bi-star');
+                            s.classList.add('bi-star-fill');
+                        } else {
+                            s.classList.remove('bi-star-fill');
+                            s.classList.add('bi-star');
+                        }
+                    });
+                });
+                
+                // Hover efekti
+                star.addEventListener('mouseenter', function() {
+                    const value = this.getAttribute('data-value');
+                    stars.forEach((s, index) => {
+                        if (index < value) {
+                            s.style.color = '#ffc107';
+                        } else {
+                            s.style.color = '';
+                        }
+                    });
+                });
+            });
+            
+            rating.addEventListener('mouseleave', function() {
+                const currentValue = document.getElementById(targetId).value;
+                stars.forEach((s, index) => {
+                    s.style.color = '';
+                });
+            });
+        });
+    </script>
+    <style>
+        .star-rating {
+            font-size: 2rem;
+            cursor: pointer;
+        }
+        .star-rating i {
+            color: #ddd;
+            transition: color 0.2s;
+        }
+        .star-rating i.bi-star-fill {
+            color: #ffc107;
+        }
+        .star-rating i:hover {
+            color: #ffc107;
+        }
+    </style>
+}

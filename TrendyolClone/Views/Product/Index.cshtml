@@ -1,0 +1,395 @@
+﻿@model TrendyolClone.Models.DTOs.UrunListeDto
+@using System.Linq
+@{
+    ViewData["Title"] = "Ürünler";
+    var selectedBrandsStr = ViewBag.SelectedBrands?.ToString() ?? "";
+    List<int> selectedBrands = new List<int>();
+    if (!string.IsNullOrEmpty(selectedBrandsStr))
+    {
+        var parts = selectedBrandsStr.Split(',');
+        foreach (var part in parts)
+        {
+            if (int.TryParse(part, out int brandId))
+            {
+                selectedBrands.Add(brandId);
+            }
+        }
+    }
+}
+
+<div class="row">
+    <!-- Filtreler -->
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-filter me-2"></i>Filtreler</h5>
+            </div>
+            <div class="card-body">
+                <form method="get" id="filterForm">
+                    <!-- Arama -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Ürün Ara</label>
+                        <input type="text" name="search" class="form-control" value="@ViewBag.SearchTerm" placeholder="Ürün, marka ara...">
+                    </div>
+
+                    <!-- Kategori Filtresi -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Kategori</label>
+                        <select name="categoryId" class="form-select">
+                            <option value="">Tüm Kategoriler</option>
+                            @if (ViewBag.Categories != null)
+                            {
+                                var currentCat = ViewBag.CurrentCategory?.ToString();
+                                @foreach (var kategori in (List<TrendyolClone.Models.Kategori>)ViewBag.Categories)
+                                {
+                                    var isSelected = currentCat == kategori.Id.ToString();
+                                    <option value="@kategori.Id" selected="@isSelected">
+                                        @kategori.Ad
+                                    </option>
+                                }
+                            }
+                        </select>
+                    </div>
+
+                    <!-- Marka Filtresi -->
+                    @if (Model?.MarkaFiltreleri != null && Model.MarkaFiltreleri.Any())
+                    {
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Marka</label>
+                            <div class="brand-filter-list" style="max-height: 200px; overflow-y: auto;">
+                                @foreach (var marka in Model.MarkaFiltreleri)
+                                {
+                                    <div class="form-check">
+                                        <input class="form-check-input brand-checkbox" type="checkbox" 
+                                               value="@marka.Id" id="brand@(marka.Id)"
+                                               @(selectedBrands.Contains(marka.Id) ? "checked" : "")>
+                                        <label class="form-check-label" for="brand@(marka.Id)">
+                                            @marka.Ad <span class="text-muted">(@marka.UrunSayisi)</span>
+                                        </label>
+                                    </div>
+                                }
+                            </div>
+                            <input type="hidden" name="brands" id="brandsInput" value="@ViewBag.SelectedBrands">
+                        </div>
+                    }
+
+                    <!-- Fiyat Aralığı -->
+                    @if (Model?.FiyatAraligi != null)
+                    {
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Fiyat Aralığı</label>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <input type="number" name="minPrice" class="form-control form-control-sm" 
+                                           placeholder="Min" value="@ViewBag.MinPrice" 
+                                           min="@Model.FiyatAraligi.MinFiyat" max="@Model.FiyatAraligi.MaxFiyat">
+                                </div>
+                                <div class="col-6">
+                                    <input type="number" name="maxPrice" class="form-control form-control-sm" 
+                                           placeholder="Max" value="@ViewBag.MaxPrice"
+                                           min="@Model.FiyatAraligi.MinFiyat" max="@Model.FiyatAraligi.MaxFiyat">
+                                </div>
+                            </div>
+                            <small class="text-muted">
+                                @Model.FiyatAraligi.MinFiyat.ToString("C") - @Model.FiyatAraligi.MaxFiyat.ToString("C")
+                            </small>
+                        </div>
+                    }
+
+                    <!-- Stok Durumu -->
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="inStock" value="true" 
+                                   id="inStock" @(ViewBag.InStock == true ? "checked" : "")>
+                            <label class="form-check-label" for="inStock">
+                                Sadece Stokta Olanlar <span class="text-muted">(@Model?.ToplamStokluUrun)</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- İndirim Durumu -->
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="onSale" value="true" 
+                                   id="onSale" @(ViewBag.OnSale == true ? "checked" : "")>
+                            <label class="form-check-label" for="onSale">
+                                Sadece İndirimliler <span class="text-muted">(@Model?.ToplamIndirimliUrun)</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Minimum Puan -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Minimum Puan</label>
+                        @{
+                            var minRating = ViewBag.MinRating?.ToString() ?? "";
+                        }
+                        <select name="minRating" class="form-select">
+                            <option value="">Tümü</option>
+                            @if (minRating == "4")
+                            {
+                                <option value="4" selected>4+ ⭐</option>
+                            }
+                            else
+                            {
+                                <option value="4">4+ ⭐</option>
+                            }
+                            @if (minRating == "3")
+                            {
+                                <option value="3" selected>3+ ⭐</option>
+                            }
+                            else
+                            {
+                                <option value="3">3+ ⭐</option>
+                            }
+                            @if (minRating == "2")
+                            {
+                                <option value="2" selected>2+ ⭐</option>
+                            }
+                            else
+                            {
+                                <option value="2">2+ ⭐</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search me-2"></i>Filtrele
+                        </button>
+                        <a href="@Url.Action("Index")" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-times me-2"></i>Temizle
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ürünler -->
+    <div class="col-md-9">
+        @if (Model?.Urunler != null && Model.Urunler.Any())
+        {
+            <!-- Başlık ve Sıralama -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4>Ürünler <span class="text-muted">(@Model.ToplamUrun)</span></h4>
+                <div class="d-flex align-items-center gap-2">
+                    <label class="mb-0">Sırala:</label>
+                    <select name="sort" id="sortSelect" class="form-select form-select-sm" style="width: auto;" onchange="updateSort(this.value)">
+                        <option value="default">Varsayılan</option>
+                        <option value="price-asc">Fiyat (Düşük-Yüksek)</option>
+                        <option value="price-desc">Fiyat (Yüksek-Düşük)</option>
+                        <option value="newest">Yeni Eklenenler</option>
+                        <option value="popular">Popüler</option>
+                        <option value="best-selling">Çok Satanlar</option>
+                        <option value="rating">En Yüksek Puan</option>
+                        <option value="discount">İndirim Oranı</option>
+                    </select>
+                    <script>
+                        document.getElementById('sortSelect').value = '@(ViewBag.SortBy ?? "default")';
+                    </script>
+                </div>
+            </div>
+
+            <div class="row">
+                @foreach (var urun in Model.Urunler)
+                {
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="card h-100 product-card">
+                            <div class="position-relative">
+                                <img src="@(string.IsNullOrEmpty(urun.ResimUrl) ? "/images/no-image.jpg" : urun.ResimUrl)" 
+                                     class="card-img-top" alt="@urun.Ad" style="height: 200px; object-fit: cover;">
+                                
+                                @if (urun.IndirimdeMi)
+                                {
+                                    <div class="position-absolute top-0 end-0 m-2">
+                                        <span class="badge bg-danger">-%@urun.IndirimOrani.ToString("0")</span>
+                                    </div>
+                                }
+                                
+                                @if (urun.Stok <= 5 && urun.Stok > 0)
+                                {
+                                    <div class="position-absolute top-0 start-0 m-2">
+                                        <span class="badge bg-warning text-dark">Son @urun.Stok</span>
+                                    </div>
+                                }
+                            </div>
+
+                            <div class="card-body d-flex flex-column">
+                                @if (!string.IsNullOrEmpty(urun.MarkaAdi))
+                                {
+                                    <p class="text-muted small mb-1">@urun.MarkaAdi</p>
+                                }
+                                <h6 class="card-title">@urun.Ad</h6>
+                                <p class="card-text text-muted small flex-grow-1">
+                                    @(urun.Aciklama?.Length > 80 ? urun.Aciklama.Substring(0, 80) + "..." : urun.Aciklama)
+                                </p>
+                                
+                                <!-- Rating -->
+                                @if (urun.Puan > 0)
+                                {
+                                    <div class="mb-2">
+                                        @for (int i = 1; i <= 5; i++)
+                                        {
+                                            <i class="fas fa-star @(i <= urun.Puan ? "text-warning" : "text-muted")"></i>
+                                        }
+                                        <small class="text-muted">(@urun.YorumSayisi)</small>
+                                    </div>
+                                }
+
+                                <div class="mt-auto">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        @if (urun.IndirimdeMi)
+                                        {
+                                            <div>
+                                                <div class="text-decoration-line-through text-muted small">@urun.Fiyat.ToString("C")</div>
+                                                <div class="fw-bold text-danger fs-5">@urun.GecerliFiyat.ToString("C")</div>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span class="fw-bold fs-5">@urun.Fiyat.ToString("C")</span>
+                                        }
+                                    </div>
+                                    
+                                    <div class="d-flex gap-2">
+                                        <a asp-controller="Product" asp-action="Details" asp-route-id="@urun.Id" 
+                                           class="btn btn-outline-primary btn-sm flex-grow-1">
+                                            <i class="fas fa-eye me-1"></i>Detay
+                                        </a>
+                                        @if (urun.Stok > 0)
+                                        {
+                                            <button class="btn btn-primary btn-sm add-to-cart" data-product-id="@urun.Id">
+                                                <i class="fas fa-cart-plus"></i>
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn btn-secondary btn-sm" disabled>
+                                                <i class="fas fa-times"></i> Stokta Yok
+                                            </button>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Sayfalama -->
+            @if (Model.ToplamSayfa > 1)
+            {
+                <nav aria-label="Sayfa navigasyonu">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item @(!Model.OncekiSayfaVarMi ? "disabled" : "")">
+                            <a class="page-link" href="@GetPageUrl(Model.MevcutSayfa - 1)">Önceki</a>
+                        </li>
+                        
+                        @for (int i = 1; i <= Model.ToplamSayfa; i++)
+                        {
+                            <li class="page-item @(i == Model.MevcutSayfa ? "active" : "")">
+                                <a class="page-link" href="@GetPageUrl(i)">@i</a>
+                            </li>
+                        }
+                        
+                        <li class="page-item @(!Model.SonrakiSayfaVarMi ? "disabled" : "")">
+                            <a class="page-link" href="@GetPageUrl(Model.MevcutSayfa + 1)">Sonraki</a>
+                        </li>
+                    </ul>
+                </nav>
+            }
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                <h3>Ürün bulunamadı</h3>
+                <p class="text-muted">Arama kriterlerinizi değiştirip tekrar deneyin.</p>
+                <a asp-controller="Product" asp-action="Index" class="btn btn-primary">
+                    <i class="fas fa-refresh me-2"></i>Filtreleri Temizle
+                </a>
+            </div>
+        }
+    </div>
+</div>
+
+@functions {
+    string GetPageUrl(int page)
+    {
+        var query = Context.Request.Query.ToDictionary(x => x.Key, x => x.Value.ToString());
+        query["page"] = page.ToString();
+        return "?" + string.Join("&", query.Select(x => $"{x.Key}={x.Value}"));
+    }
+}
+
+@section Scripts {
+    <script>
+        // Marka checkbox'ları için
+        $('.brand-checkbox').change(function() {
+            var selectedBrands = [];
+            $('.brand-checkbox:checked').each(function() {
+                selectedBrands.push($(this).val());
+            });
+            $('#brandsInput').val(selectedBrands.join(','));
+        });
+
+        // Sıralama değiştiğinde
+        function updateSort(sortValue) {
+            var url = new URL(window.location.href);
+            url.searchParams.set('sort', sortValue);
+            url.searchParams.set('page', '1'); // İlk sayfaya dön
+            window.location.href = url.toString();
+        }
+
+        // Sepete ekle
+        $(document).ready(function() {
+            $('.add-to-cart').click(function() {
+                var productId = $(this).data('product-id');
+                
+                $.post('@Url.Action("AddToCart", "Product")', { productId: productId }, function(data) {
+                    if (data.success) {
+                        $('#cart-count').text(data.cartCount);
+                        
+                        // Toast notification
+                        var toast = $('<div class="toast position-fixed top-0 end-0 m-3" role="alert">' +
+                            '<div class="toast-header bg-success text-white">' +
+                            '<strong class="me-auto">Başarılı!</strong>' +
+                            '<button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>' +
+                            '</div>' +
+                            '<div class="toast-body">' + data.message + '</div>' +
+                            '</div>');
+                        
+                        $('body').append(toast);
+                        var bsToast = new bootstrap.Toast(toast[0]);
+                        bsToast.show();
+                        
+                        toast.on('hidden.bs.toast', function() {
+                            $(this).remove();
+                        });
+                    } else {
+                        alert(data.message);
+                    }
+                });
+            });
+        });
+    </script>
+
+    <style>
+        .product-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .brand-filter-list {
+            border: 1px solid #dee2e6;
+            border-radius: 0.25rem;
+            padding: 0.5rem;
+        }
+        .brand-filter-list .form-check {
+            padding: 0.25rem 0;
+        }
+    </style>
+}

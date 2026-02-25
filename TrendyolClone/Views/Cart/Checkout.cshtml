@@ -1,0 +1,358 @@
+﻿@model List<TrendyolClone.Models.SepetKalemi>
+@{
+    ViewData["Title"] = "Sipariş Özeti";
+}
+
+<div class="container mt-4">
+    <h2 class="mb-4"><i class="fas fa-shopping-cart me-2"></i>Sipariş Özeti</h2>
+
+    <div class="row">
+        <!-- Sipariş Detayları -->
+        <div class="col-md-8">
+            <!-- Adres Seçimi -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-map-marker-alt me-2"></i>Teslimat Adresi</h5>
+                </div>
+                <div class="card-body">
+                    <div id="addressList">
+                        <p class="text-muted">Adresler yükleniyor...</p>
+                    </div>
+                    <button class="btn btn-outline-primary btn-sm mt-3" data-bs-toggle="modal" data-bs-target="#addAddressModal">
+                        <i class="fas fa-plus me-2"></i>Yeni Adres Ekle
+                    </button>
+                </div>
+            </div>
+
+            <!-- Ödeme Yöntemi -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-credit-card me-2"></i>Ödeme Yöntemi</h5>
+                </div>
+                <div class="card-body">
+                    <div class="payment-methods">
+                        <div class="form-check payment-option mb-3 p-3 border rounded">
+                            <input class="form-check-input" type="radio" name="OdemeYontemi" id="creditCard" value="Kredi Kartı" checked>
+                            <label class="form-check-label w-100" for="creditCard">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-credit-card fa-2x text-primary me-3"></i>
+                                    <div>
+                                        <strong>Kredi Kartı</strong>
+                                        <br>
+                                        <small class="text-muted">Visa, Mastercard, American Express</small>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                        
+                        <div class="form-check payment-option mb-3 p-3 border rounded">
+                            <input class="form-check-input" type="radio" name="OdemeYontemi" id="debitCard" value="Banka Kartı">
+                            <label class="form-check-label w-100" for="debitCard">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-money-check-alt fa-2x text-success me-3"></i>
+                                    <div>
+                                        <strong>Banka Kartı</strong>
+                                        <br>
+                                        <small class="text-muted">Anında ödeme</small>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                        
+                        <div class="form-check payment-option mb-3 p-3 border rounded">
+                            <input class="form-check-input" type="radio" name="OdemeYontemi" id="cashOnDelivery" value="Kapıda Ödeme">
+                            <label class="form-check-label w-100" for="cashOnDelivery">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-hand-holding-usd fa-2x text-warning me-3"></i>
+                                    <div>
+                                        <strong>Kapıda Ödeme</strong>
+                                        <br>
+                                        <small class="text-muted">Nakit veya kredi kartı ile</small>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                        
+                        <div class="form-check payment-option mb-3 p-3 border rounded">
+                            <input class="form-check-input" type="radio" name="OdemeYontemi" id="bankTransfer" value="Havale/EFT">
+                            <label class="form-check-label w-100" for="bankTransfer">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-university fa-2x text-info me-3"></i>
+                                    <div>
+                                        <strong>Havale/EFT</strong>
+                                        <br>
+                                        <small class="text-muted">Banka hesabına havale</small>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ürünler -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-box me-2"></i>Sipariş Ürünleri</h5>
+                </div>
+                <div class="card-body">
+                    @foreach (var item in Model)
+                    {
+                        <div class="d-flex align-items-center mb-3 pb-3 border-bottom">
+                            <img src="@item.ResimUrl" alt="@item.UrunAdi" class="me-3" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">@item.UrunAdi</h6>
+                                <p class="text-muted mb-0">Adet: @item.Miktar</p>
+                            </div>
+                            <div class="text-end">
+                                <p class="mb-0 fw-bold">@item.ToplamFiyat.ToString("C")</p>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Sipariş Özeti -->
+        <div class="col-md-4">
+            <div class="card sticky-top" style="top: 20px;">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-file-invoice me-2"></i>Ödeme Özeti</h5>
+                </div>
+                <div class="card-body">
+                    @{
+                        var subtotal = Model.Sum(c => c.ToplamFiyat);
+                        var shipping = 0m; // Ücretsiz kargo
+                        var total = subtotal + shipping;
+                    }
+                    
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Ara Toplam:</span>
+                        <span>@subtotal.ToString("C")</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Kargo:</span>
+                        <span class="text-success">Ücretsiz</span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between mb-3">
+                        <strong>Toplam:</strong>
+                        <strong class="text-primary">@total.ToString("C")</strong>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <small>Siparişiniz onaylandıktan sonra kargoya verilecektir.</small>
+                    </div>
+
+                    <button class="btn btn-success btn-lg w-100" id="completeOrderBtn">
+                        <i class="fas fa-check me-2"></i>Siparişi Tamamla
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Adres Ekleme Modal -->
+<div class="modal fade" id="addAddressModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Yeni Adres Ekle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addAddressForm">
+                    <div class="mb-3">
+                        <label class="form-label">Adres Başlığı *</label>
+                        <input type="text" class="form-control" name="title" required placeholder="Ev, İş, vb.">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Ad Soyad *</label>
+                        <input type="text" class="form-control" name="fullName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Telefon *</label>
+                        <input type="tel" class="form-control" name="TelefonNumarasi" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">İl *</label>
+                            <input type="text" class="form-control" name="city" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">İlçe *</label>
+                            <input type="text" class="form-control" name="district" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Posta Kodu</label>
+                        <input type="text" class="form-control" name="postalCode">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Adres *</label>
+                        <textarea class="form-control" name="addressLine" rows="3" required></textarea>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" name="isDefault" id="isDefault">
+                        <label class="form-check-label" for="isDefault">
+                            Varsayılan adres olarak kaydet
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <button type="button" class="btn btn-primary" id="saveAddressBtn">Kaydet</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let selectedAddressId = null;
+
+        $(document).ready(function() {
+            loadAddresses();
+
+            // Adres kaydet
+            $('#saveAddressBtn').click(function() {
+                var formData = {
+                    title: $('input[name="title"]').val(),
+                    fullName: $('input[name="fullName"]').val(),
+                    TelefonNumarasi: $('input[name="TelefonNumarasi"]').val(),
+                    city: $('input[name="city"]').val(),
+                    district: $('input[name="district"]').val(),
+                    postalCode: $('input[name="postalCode"]').val(),
+                    addressLine: $('textarea[name="addressLine"]').val(),
+                    isDefault: $('input[name="isDefault"]').is(':checked')
+                };
+
+                $.ajax({
+                    url: '@Url.Action("AddAddress", "Account")',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(formData),
+                    success: function(data) {
+                        if (data.success) {
+                            $('#addAddressModal').modal('hide');
+                            $('#addAddressForm')[0].reset();
+                            loadAddresses();
+                            showToast('Başarılı!', data.message, 'success');
+                        } else {
+                            showToast('Hata!', data.message, 'error');
+                        }
+                    }
+                });
+            });
+
+            // Sipariş tamamla
+            $('#completeOrderBtn').click(function() {
+                if (!selectedAddressId) {
+                    showToast('Uyarı!', 'Lütfen bir teslimat adresi seçin!', 'error');
+                    return;
+                }
+
+                var OdemeYontemi = $('input[name="OdemeYontemi"]:checked').val();
+                if (!OdemeYontemi) {
+                    showToast('Uyarı!', 'Lütfen bir ödeme yöntemi seçin!', 'error');
+                    return;
+                }
+
+                if (!confirm('Siparişi onaylıyor musunuz?')) {
+                    return;
+                }
+
+                $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>İşleniyor...');
+
+                $.post('@Url.Action("CompleteOrder", "Cart")', { 
+                    addressId: selectedAddressId,
+                    OdemeYontemi: OdemeYontemi
+                }, function(data) {
+                    if (data.success) {
+                        window.location.href = '@Url.Action("OrderSuccess", "Cart")' + '?orderId=' + data.orderId;
+                    } else {
+                        showToast('Hata!', data.message, 'error');
+                        $('#completeOrderBtn').prop('disabled', false).html('<i class="fas fa-check me-2"></i>Siparişi Tamamla');
+                    }
+                }).fail(function() {
+                    showToast('Hata!', 'Bir hata oluştu!', 'error');
+                    $('#completeOrderBtn').prop('disabled', false).html('<i class="fas fa-check me-2"></i>Siparişi Tamamla');
+                });
+            });
+        });
+
+        function loadAddresses() {
+            $.get('@Url.Action("GetAddresses", "Account")', function(data) {
+                if (data && data.length > 0) {
+                    var html = '';
+                    data.forEach(function(Adres) {
+                        var isDefault = Adres.isDefault ? '<span class="badge bg-primary ms-2">Varsayılan</span>' : '';
+                        html += `
+                            <div class="form-check mb-3 p-3 border rounded Adres-item" data-Adres-id="${Adres.id}">
+                                <input class="form-check-input Adres-radio" type="radio" name="addressRadio" id="Adres${Adres.id}" value="${Adres.id}" ${Adres.isDefault ? 'checked' : ''}>
+                                <label class="form-check-label w-100" for="Adres${Adres.id}">
+                                    <strong>${Adres.title}</strong> ${isDefault}
+                                    <br>
+                                    <small class="text-muted">
+                                        ${Adres.fullName} - ${Adres.TelefonNumarasi}
+                                        <br>
+                                        ${Adres.addressLine}, ${Adres.district}/${Adres.city}
+                                    </small>
+                                </label>
+                            </div>
+                        `;
+                    });
+                    $('#addressList').html(html);
+
+                    // İlk adresi seç
+                    if (data[0].isDefault) {
+                        selectedAddressId = data[0].id;
+                    }
+
+                    // Adres seçimi
+                    $('.Adres-radio').change(function() {
+                        selectedAddressId = $(this).val();
+                        $('.Adres-item').removeClass('border-primary');
+                        $(this).closest('.Adres-item').addClass('border-primary');
+                    });
+
+                    // Varsayılan adresi vurgula
+                    if (selectedAddressId) {
+                        $(`input[value="${selectedAddressId}"]`).closest('.Adres-item').addClass('border-primary');
+                    }
+                } else {
+                    $('#addressList').html('<p class="text-muted">Henüz kayıtlı adresiniz yok. Lütfen yeni bir adres ekleyin.</p>');
+                }
+            });
+        }
+    </script>
+}
+
+<style>
+    .Adres-item {
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    .Adres-item:hover {
+        background-color: #f8f9fa;
+    }
+    .Adres-item.border-primary {
+        background-color: #e7f3ff;
+    }
+    .payment-option {
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    .payment-option:hover {
+        background-color: #f8f9fa;
+        border-color: #0d6efd !important;
+    }
+    .payment-option:has(input:checked) {
+        background-color: #e7f3ff;
+        border-color: #0d6efd !important;
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    }
+</style>

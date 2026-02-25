@@ -1,0 +1,459 @@
+﻿@model List<TrendyolClone.Models.Adres>
+@{
+    ViewData["Title"] = "Adreslerim";
+}
+
+<div class="container my-5">
+    <div class="row">
+        <!-- Sol Menü -->
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Hesabım</h5>
+                    <div class="list-group list-group-flush">
+                        <a href="/Account/Profile" class="list-group-item list-group-item-action">
+                            <i class="fas fa-Kullanici me-2"></i> Profil Bilgilerim
+                        </a>
+                        <a href="/Account/Orders" class="list-group-item list-group-item-action">
+                            <i class="fas fa-shopping-bag me-2"></i> Siparişlerim
+                        </a>
+                        <a href="/Account/Addresses" class="list-group-item list-group-item-action active">
+                            <i class="fas fa-map-marker-alt me-2"></i> Adreslerim
+                        </a>
+                        <a href="/Account/Favorites" class="list-group-item list-group-item-action">
+                            <i class="fas fa-heart me-2"></i> Favorilerim
+                        </a>
+                        <a href="/Account/Reviews" class="list-group-item list-group-item-action">
+                            <i class="fas fa-star me-2"></i> Yorumlarım
+                        </a>
+                        <a href="/Account/Settings" class="list-group-item list-group-item-action">
+                            <i class="fas fa-cog me-2"></i> Ayarlar
+                        </a>
+                        <a href="/Account/Logout" class="list-group-item list-group-item-action text-danger">
+                            <i class="fas fa-sign-out-alt me-2"></i> Çıkış Yap
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sağ İçerik -->
+        <div class="col-md-9">
+            <div class="card">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Adreslerim</h5>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addAddressModal">
+                        <i class="fas fa-plus me-2"></i> Yeni Adres Ekle
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div id="addressList" class="row">
+                        <!-- Adresler buraya yüklenecek -->
+                        <div class="col-12 text-center py-5">
+                            <i class="fas fa-map-marker-alt fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">Henüz kayıtlı adresiniz bulunmamaktadır.</p>
+                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addAddressModal">
+                                İlk Adresini Ekle
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Yeni Adres Ekleme Modal -->
+<div class="modal fade" id="addAddressModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Yeni Adres Ekle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addAddressForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Adres Başlığı *</label>
+                            <input type="text" class="form-control" id="addressTitle" placeholder="Örn: Ev, İş" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Ad Soyad *</label>
+                            <input type="text" class="form-control" id="fullName" required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Telefon *</label>
+                            <input type="tel" class="form-control" id="phone" placeholder="5XX XXX XX XX" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">İl *</label>
+                            <select class="form-select" id="city" required>
+                                <option value="">İl Seçiniz</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">İlçe *</label>
+                            <select class="form-select" id="district" required disabled>
+                                <option value="">Önce il seçiniz</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Posta Kodu</label>
+                            <input type="text" class="form-control" id="postalCode" placeholder="34000">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Adres *</label>
+                        <textarea class="form-control" id="addressText" rows="3" placeholder="Mahalle, sokak, bina no, daire no" required></textarea>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="isDefault">
+                        <label class="form-check-label" for="isDefault">
+                            Varsayılan adres olarak kaydet
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <button type="button" class="btn btn-primary" onclick="saveAddress()">Kaydet</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Adres Düzenleme Modal -->
+<div class="modal fade" id="editAddressModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Adresi Düzenle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editAddressForm">
+                    <input type="hidden" id="editAddressId">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Adres Başlığı *</label>
+                            <input type="text" class="form-control" id="editAddressTitle" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Ad Soyad *</label>
+                            <input type="text" class="form-control" id="editFullName" required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Telefon *</label>
+                            <input type="tel" class="form-control" id="editPhone" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">İl *</label>
+                            <select class="form-select" id="editCity" required>
+                                <option value="">İl Seçiniz</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">İlçe *</label>
+                            <select class="form-select" id="editDistrict" required>
+                                <option value="">İlçe Seçiniz</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Posta Kodu</label>
+                            <input type="text" class="form-control" id="editPostalCode">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Adres *</label>
+                        <textarea class="form-control" id="editAddressText" rows="3" required></textarea>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="editIsDefault">
+                        <label class="form-check-label" for="editIsDefault">
+                            Varsayılan adres olarak kaydet
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <button type="button" class="btn btn-primary" onclick="updateAddress()">Güncelle</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="~/js/cities.js"></script>
+<script>
+    // Sayfa yüklendiğinde
+    document.addEventListener('DOMContentLoaded', function() {
+        loadCities();
+        loadAddresses();
+        
+        // İl seçildiğinde ilçeleri yükle
+        document.getElementById('city').addEventListener('change', function() {
+            loadDistricts(this.value, 'district');
+        });
+        
+        document.getElementById('editCity').addEventListener('change', function() {
+            loadDistricts(this.value, 'editDistrict');
+        });
+    });
+
+    // İlleri yükle
+    function loadCities() {
+        const citySelect = document.getElementById('city');
+        const editCitySelect = document.getElementById('editCity');
+        
+        Object.keys(turkeyData).sort().forEach(city => {
+            const option1 = new Option(city, city);
+            const option2 = new Option(city, city);
+            citySelect.add(option1);
+            editCitySelect.add(option2);
+        });
+    }
+
+    // İlçeleri yükle
+    function loadDistricts(city, selectId) {
+        const districtSelect = document.getElementById(selectId);
+        districtSelect.innerHTML = '<option value="">İlçe Seçiniz</option>';
+        
+        if (city && turkeyData[city]) {
+            districtSelect.disabled = false;
+            turkeyData[city].forEach(district => {
+                const option = new Option(district, district);
+                districtSelect.add(option);
+            });
+        } else {
+            districtSelect.disabled = true;
+        }
+    }
+
+    // Adresleri yükle
+    function loadAddresses() {
+        fetch('/Account/GetAddresses')
+            .then(response => response.json())
+            .then(data => {
+                displayAddresses(data);
+            })
+            .catch(error => {
+                console.error('Adresler yüklenirken hata:', error);
+            });
+    }
+
+    // Adresleri göster
+    function displayAddresses(addresses) {
+        const addressList = document.getElementById('addressList');
+        
+        if (addresses.length === 0) {
+            addressList.innerHTML = `
+                <div class="col-12 text-center py-5">
+                    <i class="fas fa-map-marker-alt fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">Henüz kayıtlı adresiniz bulunmamaktadır.</p>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addAddressModal">
+                        İlk Adresini Ekle
+                    </button>
+                </div>
+            `;
+            return;
+        }
+
+        addressList.innerHTML = addresses.map(adres => `
+            <div class="col-md-6 mb-3">
+                <div class="card h-100 ${adres.varsayilan ? 'border-primary' : ''}">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h6 class="card-title mb-0">
+                                ${adres.baslik}
+                                ${adres.varsayilan ? '<span class="badge bg-primary ms-2">Varsayılan</span>' : ''}
+                            </h6>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-link text-dark" data-bs-toggle="dropdown">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="#" onclick="editAddress(${adres.id})">
+                                        <i class="fas fa-edit me-2"></i> Düzenle
+                                    </a></li>
+                                    <li><a class="dropdown-item text-danger" href="#" onclick="deleteAddress(${adres.id})">
+                                        <i class="fas fa-trash me-2"></i> Sil
+                                    </a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <p class="mb-1"><strong>${adres.tamAd}</strong></p>
+                        <p class="mb-1 text-muted small">${adres.adresSatiri}</p>
+                        <p class="mb-1 text-muted small">${adres.ilce} / ${adres.sehir}</p>
+                        <p class="mb-0 text-muted small">
+                            <i class="fas fa-phone me-1"></i> ${adres.telefonNumarasi}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // Yeni adres kaydet
+    function saveAddress() {
+        const baslik = document.getElementById('addressTitle').value.trim();
+        const tamAd = document.getElementById('fullName').value.trim();
+        const telefon = document.getElementById('phone').value.trim();
+        const sehir = document.getElementById('city').value;
+        const ilce = document.getElementById('district').value;
+        const postaKodu = document.getElementById('postalCode').value.trim();
+        const adresSatiri = document.getElementById('addressText').value.trim();
+        const varsayilan = document.getElementById('isDefault').checked;
+
+        // Validasyon
+        if (!baslik || !tamAd || !telefon || !sehir || !ilce || !adresSatiri) {
+            alert('Lütfen zorunlu alanları doldurunuz!');
+            return;
+        }
+
+        const addressData = {
+            Baslik: baslik,
+            TamAd: tamAd,
+            TelefonNumarasi: telefon,
+            Sehir: sehir,
+            Ilce: ilce,
+            PostaKodu: postaKodu || '',
+            AdresSatiri: adresSatiri,
+            Varsayilan: varsayilan
+        };
+
+        console.log('Gönderilen veri:', JSON.stringify(addressData));
+
+        fetch('/Account/AddAddress', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(addressData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                bootstrap.Modal.getInstance(document.getElementById('addAddressModal')).hide();
+                document.getElementById('addAddressForm').reset();
+                loadAddresses();
+                alert('Adres başarıyla eklendi!');
+            } else {
+                alert(data.message || 'Adres eklenirken bir hata oluştu!');
+            }
+        })
+        .catch(error => {
+            console.error('Hata:', error);
+            alert('Adres eklenirken bir hata oluştu!');
+        });
+    }
+
+    // Adres düzenle
+    function editAddress(id) {
+        fetch(`/Account/GetAddress?id=${id}`)
+            .then(response => response.json())
+            .then(adres => {
+                document.getElementById('editAddressId').value = adres.id;
+                document.getElementById('editAddressTitle').value = adres.baslik;
+                document.getElementById('editFullName').value = adres.tamAd;
+                document.getElementById('editPhone').value = adres.telefonNumarasi;
+                document.getElementById('editCity').value = adres.sehir;
+                loadDistricts(adres.sehir, 'editDistrict');
+                setTimeout(() => {
+                    document.getElementById('editDistrict').value = adres.ilce;
+                }, 100);
+                document.getElementById('editPostalCode').value = adres.postaKodu || '';
+                document.getElementById('editAddressText').value = adres.adresSatiri;
+                document.getElementById('editIsDefault').checked = adres.varsayilan;
+                
+                new bootstrap.Modal(document.getElementById('editAddressModal')).show();
+            })
+            .catch(error => {
+                console.error('Hata:', error);
+                alert('Adres bilgileri yüklenirken hata oluştu!');
+            });
+    }
+
+    // Adres güncelle
+    function updateAddress() {
+        const addressData = {
+            Id: parseInt(document.getElementById('editAddressId').value),
+            Baslik: document.getElementById('editAddressTitle').value.trim(),
+            TamAd: document.getElementById('editFullName').value.trim(),
+            TelefonNumarasi: document.getElementById('editPhone').value.trim(),
+            Sehir: document.getElementById('editCity').value,
+            Ilce: document.getElementById('editDistrict').value,
+            PostaKodu: document.getElementById('editPostalCode').value.trim() || '',
+            AdresSatiri: document.getElementById('editAddressText').value.trim(),
+            Varsayilan: document.getElementById('editIsDefault').checked
+        };
+
+        fetch('/Account/UpdateAddress', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(addressData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                bootstrap.Modal.getInstance(document.getElementById('editAddressModal')).hide();
+                loadAddresses();
+                alert('Adres başarıyla güncellendi!');
+            } else {
+                alert(data.message || 'Adres güncellenirken bir hata oluştu!');
+            }
+        })
+        .catch(error => {
+            console.error('Hata:', error);
+            alert('Adres güncellenirken bir hata oluştu!');
+        });
+    }
+
+    // Adres sil
+    function deleteAddress(id) {
+        if (!confirm('Bu adresi silmek istediğinizden emin misiniz?')) {
+            return;
+        }
+
+        fetch('/Account/DeleteAddress?id=' + id, {
+            method: 'POST'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                loadAddresses();
+                alert('Adres başarıyla silindi!');
+            } else {
+                alert(data.message || 'Adres silinirken bir hata oluştu!');
+            }
+        })
+        .catch(error => {
+            console.error('Hata:', error);
+            alert('Adres silinirken bir hata oluştu!');
+        });
+    }
+</script>
+
+<style>
+    .card {
+        transition: all 0.3s ease;
+    }
+    
+    .card:hover {
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .border-primary {
+        border-width: 2px !important;
+    }
+</style>

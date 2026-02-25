@@ -1,0 +1,293 @@
+@model TrendyolClone.Models.DTOs.SiparisDetayYonetimDto
+@{
+    ViewData["Title"] = "Sipariş Detayı - " + Model.SiparisNo;
+}
+
+<div class="container-fluid my-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-shopping-bag"></i> Sipariş #@Model.SiparisNo</h2>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Geri Dön
+        </a>
+    </div>
+
+    <!-- Mesajlar -->
+    @if (TempData["Mesaj"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+            @TempData["Mesaj"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["Hata"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show">
+            @TempData["Hata"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="row">
+        <!-- Sol Kolon -->
+        <div class="col-md-8">
+            <!-- Sipariş Bilgileri -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Sipariş Bilgileri</h5>
+                    @{
+                        var badgeClass = Model.Durum switch
+                        {
+                            TrendyolClone.Models.SiparisDurumu.Beklemede => "bg-secondary",
+                            TrendyolClone.Models.SiparisDurumu.Onaylandi => "bg-info",
+                            TrendyolClone.Models.SiparisDurumu.Hazirlaniyor => "bg-warning",
+                            TrendyolClone.Models.SiparisDurumu.KargoyaVerildi => "bg-primary",
+                            TrendyolClone.Models.SiparisDurumu.TeslimEdildi => "bg-success",
+                            TrendyolClone.Models.SiparisDurumu.IptalEdildi => "bg-danger",
+                            _ => "bg-secondary"
+                        };
+                    }
+                    <span class="badge @badgeClass fs-6">@Model.DurumAdi</span>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Sipariş No:</strong> @Model.SiparisNo</p>
+                            <p><strong>Tarih:</strong> @Model.SiparisTarihi.ToString("dd.MM.yyyy HH:mm")</p>
+                        </div>
+                        <div class="col-md-6">
+                            @if (!string.IsNullOrEmpty(Model.KargoTakipNo))
+                            {
+                                <p><strong>Kargo Firması:</strong> @Model.KargoFirmasi</p>
+                                <p><strong>Takip No:</strong> @Model.KargoTakipNo</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ürünler -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Sipariş Ürünleri</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Ürün</th>
+                                    <th>Birim Fiyat</th>
+                                    <th>Adet</th>
+                                    <th>Toplam</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var urun in Model.Urunler)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <img src="@urun.ResimUrl" alt="@urun.UrunAdi" class="rounded" style="width: 50px; height: 50px; object-fit: cover;">
+                                                <div class="ms-3">
+                                                    <strong>@urun.UrunAdi</strong>
+                                                    @if (!string.IsNullOrEmpty(urun.Varyasyon))
+                                                    {
+                                                        <br><small class="text-muted">@urun.Varyasyon</small>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>₺@urun.BirimFiyat.ToString("N2")</td>
+                                        <td>@urun.Adet</td>
+                                        <td><strong>₺@urun.ToplamFiyat.ToString("N2")</strong></td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot class="table-light">
+                                <tr>
+                                    <td colspan="3" class="text-end">Ara Toplam:</td>
+                                    <td><strong>₺@Model.AraToplam.ToString("N2")</strong></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="3" class="text-end">Kargo:</td>
+                                    <td>₺@Model.KargoUcreti.ToString("N2")</td>
+                                </tr>
+                                @if (Model.IndirimTutari > 0)
+                                {
+                                    <tr>
+                                        <td colspan="3" class="text-end text-success">İndirim:</td>
+                                        <td class="text-success">-₺@Model.IndirimTutari.ToString("N2")</td>
+                                    </tr>
+                                }
+                                <tr>
+                                    <td colspan="3" class="text-end"><strong>Toplam:</strong></td>
+                                    <td><strong class="fs-5">₺@Model.ToplamTutar.ToString("N2")</strong></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Durum Geçmişi -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Durum Geçmişi</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.DurumGecmisi.Any())
+                    {
+                        <div class="timeline">
+                            @foreach (var gecmis in Model.DurumGecmisi)
+                            {
+                                <div class="d-flex mb-3">
+                                    <div class="me-3">
+                                        <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                            <i class="fas fa-check text-white"></i>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <strong>@gecmis.DurumAdi</strong>
+                                        <br>
+                                        <small class="text-muted">@gecmis.Tarih.ToString("dd.MM.yyyy HH:mm")</small>
+                                        @if (!string.IsNullOrEmpty(gecmis.Aciklama))
+                                        {
+                                            <br><small>@gecmis.Aciklama</small>
+                                        }
+                                        @if (!string.IsNullOrEmpty(gecmis.DegistirenKisi))
+                                        {
+                                            <br><small class="text-muted">@gecmis.DegistirenKisi tarafından</small>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted">Henüz durum geçmişi yok.</p>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Sağ Kolon -->
+        <div class="col-md-4">
+            <!-- Müşteri Bilgileri -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-user"></i> Müşteri Bilgileri</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>@Model.KullaniciAdi</strong></p>
+                    <p><i class="fas fa-envelope"></i> @Model.Email</p>
+                    @if (!string.IsNullOrEmpty(Model.Telefon))
+                    {
+                        <p><i class="fas fa-phone"></i> @Model.Telefon</p>
+                    }
+                </div>
+            </div>
+
+            <!-- Teslimat Adresi -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-map-marker-alt"></i> Teslimat Adresi</h5>
+                </div>
+                <div class="card-body">
+                    <p>@Model.TeslimatAdresi</p>
+                </div>
+            </div>
+
+            <!-- Durum Güncelleme -->
+            @if (Model.Durum != TrendyolClone.Models.SiparisDurumu.TeslimEdildi && Model.Durum != TrendyolClone.Models.SiparisDurumu.IptalEdildi)
+            {
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-edit"></i> Durum Güncelle</h5>
+                    </div>
+                    <div class="card-body">
+                        <form asp-action="UpdateStatus" method="post">
+                            <input type="hidden" name="SiparisId" value="@Model.Id" />
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Yeni Durum</label>
+                                <select name="YeniDurum" class="form-select" required>
+                                    @foreach (TrendyolClone.Models.SiparisDurumu d in Enum.GetValues(typeof(TrendyolClone.Models.SiparisDurumu)))
+                                    {
+                                        if ((int)d > (int)Model.Durum || d == TrendyolClone.Models.SiparisDurumu.IptalEdildi)
+                                        {
+                                            <option value="@((int)d)">@d</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Kargo Firması</label>
+                                <input type="text" name="KargoFirmasi" class="form-control" value="@Model.KargoFirmasi">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Kargo Takip No</label>
+                                <input type="text" name="KargoTakipNo" class="form-control" value="@Model.KargoTakipNo">
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Açıklama</label>
+                                <textarea name="Aciklama" class="form-control" rows="2"></textarea>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-save"></i> Durumu Güncelle
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            }
+
+            <!-- Admin Notu -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-sticky-note"></i> Admin Notu</h5>
+                </div>
+                <div class="card-body">
+                    @if (!string.IsNullOrEmpty(Model.AdminNotu))
+                    {
+                        <p class="mb-3">@Model.AdminNotu</p>
+                    }
+                    <form asp-action="AddNote" method="post">
+                        <input type="hidden" name="siparisId" value="@Model.Id" />
+                        <div class="mb-3">
+                            <textarea name="not" class="form-control" rows="3" placeholder="Not ekle...">@Model.AdminNotu</textarea>
+                        </div>
+                        <button type="submit" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-save"></i> Notu Kaydet
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- İptal Et -->
+            @if (Model.Durum != TrendyolClone.Models.SiparisDurumu.TeslimEdildi && Model.Durum != TrendyolClone.Models.SiparisDurumu.IptalEdildi)
+            {
+                <div class="card border-danger">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="mb-0"><i class="fas fa-times-circle"></i> Siparişi İptal Et</h5>
+                    </div>
+                    <div class="card-body">
+                        <form asp-action="Cancel" method="post" onsubmit="return confirm('Bu siparişi iptal etmek istediğinizden emin misiniz?');">
+                            <input type="hidden" name="siparisId" value="@Model.Id" />
+                            <div class="mb-3">
+                                <label class="form-label">İptal Nedeni</label>
+                                <textarea name="iptalNedeni" class="form-control" rows="2" required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-danger w-100">
+                                <i class="fas fa-times"></i> Siparişi İptal Et
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>

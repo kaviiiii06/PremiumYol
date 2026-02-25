@@ -1,0 +1,115 @@
+@{
+    ViewData["Title"] = "SEO Yönetimi";
+}
+
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">SEO & Marketing Yönetimi</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="card bg-primary text-white">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-search"></i> SEO Ayarları
+                                    </h5>
+                                    <p class="card-text">Ürün ve kategori SEO ayarlarını yönetin</p>
+                                    <a href="@Url.Action("Products")" class="btn btn-light">Yönet</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <div class="card bg-success text-white">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-sitemap"></i> Sitemap
+                                    </h5>
+                                    <p class="card-text">Otomatik sitemap.xml oluşturma</p>
+                                    <a href="/sitemap.xml" target="_blank" class="btn btn-light">Görüntüle</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <div class="card bg-info text-white">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-chart-line"></i> Analytics
+                                    </h5>
+                                    <p class="card-text">Google Analytics ve Facebook Pixel</p>
+                                    <button class="btn btn-light" onclick="alert('Analytics ayarları appsettings.json dosyasından yapılır')">Ayarlar</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <h4>SEO Araçları</h4>
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5>SEO-Friendly URL Oluşturucu</h5>
+                                    <div class="input-group mb-3">
+                                        <input type="text" class="form-control" id="urlInput" placeholder="Metin girin...">
+                                        <button class="btn btn-primary" onclick="generateSeoUrl()">Oluştur</button>
+                                    </div>
+                                    <div id="urlResult" class="alert alert-info" style="display:none;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <h4>Yapılandırma Bilgileri</h4>
+                            <div class="alert alert-warning">
+                                <h5><i class="fas fa-info-circle"></i> Analytics Yapılandırması</h5>
+                                <p>Analytics ayarlarını <code>appsettings.json</code> dosyasına ekleyin:</p>
+                                <pre class="bg-dark text-white p-3 rounded">
+"Analytics": {
+  "GoogleAnalyticsId": "G-XXXXXXXXXX",
+  "GoogleTagManagerId": "GTM-XXXXXXX",
+  "FacebookPixelId": "XXXXXXXXXXXXXXX"
+}</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    async function generateSeoUrl() {
+        const text = document.getElementById('urlInput').value;
+        if (!text) {
+            alert('Lütfen bir metin girin');
+            return;
+        }
+
+        try {
+            const response = await fetch('@Url.Action("GenerateSeoUrl")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(text)
+            });
+
+            const data = await response.json();
+            const resultDiv = document.getElementById('urlResult');
+            resultDiv.textContent = 'SEO URL: ' + data.url;
+            resultDiv.style.display = 'block';
+        } catch (error) {
+            alert('Hata oluştu: ' + error.message);
+        }
+    }
+</script>
+}

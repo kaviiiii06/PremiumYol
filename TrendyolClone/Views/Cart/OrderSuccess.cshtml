@@ -1,0 +1,286 @@
+﻿@{
+    ViewData["Title"] = "Sipariş Başarılı";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg border-0">
+                <div class="card-body text-center py-5">
+                    <!-- Başarı İkonu -->
+                    <div class="mb-4">
+                        <div class="success-checkmark">
+                            <div class="check-icon">
+                                <span class="icon-line line-tip"></span>
+                                <span class="icon-line line-long"></span>
+                                <div class="icon-circle"></div>
+                                <div class="icon-fix"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Başlık -->
+                    <h2 class="text-success mb-3">
+                        <i class="fas fa-check-circle me-2"></i>Siparişiniz Alındı!
+                    </h2>
+                    
+                    <p class="lead text-muted mb-4">
+                        Siparişiniz başarıyla oluşturuldu ve kargoya verilmek üzere hazırlanıyor.
+                    </p>
+
+                    <!-- Sipariş Bilgileri -->
+                    <div class="alert alert-info d-inline-block">
+                        <div class="row text-start">
+                            <div class="col-6">
+                                <strong>Sipariş No:</strong>
+                            </div>
+                            <div class="col-6">
+                                #@ViewBag.OrderId
+                            </div>
+                            <div class="col-6 mt-2">
+                                <strong>Toplam Tutar:</strong>
+                            </div>
+                            <div class="col-6 mt-2">
+                                @ViewBag.OrderTotal ₺
+                            </div>
+                            <div class="col-6 mt-2">
+                                <strong>Ödeme:</strong>
+                            </div>
+                            <div class="col-6 mt-2">
+                                <span class="badge bg-info">@(ViewBag.OdemeYontemi ?? "Kredi Kartı")</span>
+                            </div>
+                            <div class="col-6 mt-2">
+                                <strong>Durum:</strong>
+                            </div>
+                            <div class="col-6 mt-2">
+                                <span class="badge bg-success">Kargoya Verildi</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bilgilendirme -->
+                    <div class="row mt-4 text-start">
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-start">
+                                <i class="fas fa-truck text-primary fa-2x me-3"></i>
+                                <div>
+                                    <h6 class="mb-1">Hızlı Teslimat</h6>
+                                    <small class="text-muted">Siparişiniz 2-3 iş günü içinde kargoya verilecektir.</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-start">
+                                <i class="fas fa-envelope text-primary fa-2x me-3"></i>
+                                <div>
+                                    <h6 class="mb-1">E-posta Bildirimi</h6>
+                                    <small class="text-muted">Sipariş durumunuz e-posta ile bildirilecektir.</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-start">
+                                <i class="fas fa-box text-primary fa-2x me-3"></i>
+                                <div>
+                                    <h6 class="mb-1">Kargo Takibi</h6>
+                                    <small class="text-muted">Kargo numaranız e-posta ile gönderilecektir.</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex align-items-start">
+                                <i class="fas fa-undo text-primary fa-2x me-3"></i>
+                                <div>
+                                    <h6 class="mb-1">Kolay İade</h6>
+                                    <small class="text-muted">14 gün içinde ücretsiz iade hakkınız bulunmaktadır.</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Butonlar -->
+                    <div class="mt-4 d-flex gap-3 justify-content-center flex-wrap">
+                        <a asp-controller="Account" asp-action="Orders" class="btn btn-primary btn-lg">
+                            <i class="fas fa-list me-2"></i>Siparişlerim
+                        </a>
+                        <a asp-controller="Home" asp-action="Index" class="btn btn-outline-primary btn-lg">
+                            <i class="fas fa-home me-2"></i>Ana Sayfaya Dön
+                        </a>
+                        <a asp-controller="Urun" asp-action="Index" class="btn btn-outline-secondary btn-lg">
+                            <i class="fas fa-shopping-bag me-2"></i>Alışverişe Devam Et
+                        </a>
+                    </div>
+
+                    <!-- Teşekkür Mesajı -->
+                    <div class="mt-5 pt-4 border-top">
+                        <p class="text-muted mb-0">
+                            <i class="fas fa-heart text-danger me-2"></i>
+                            Bizi tercih ettiğiniz için teşekkür ederiz!
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Önerilen Ürünler -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-star me-2"></i>Size Özel Ürünler</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Beğenebileceğiniz diğer ürünlere göz atın!</p>
+                    <a asp-controller="Urun" asp-action="Index" class="btn btn-outline-primary">
+                        <i class="fas fa-th-large me-2"></i>Tüm Ürünleri Gör
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .success-checkmark {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto;
+    }
+
+    .check-icon {
+        width: 80px;
+        height: 80px;
+        position: relative;
+        border-radius: 50%;
+        box-sizing: content-box;
+        border: 4px solid #4CAF50;
+    }
+
+    .check-icon::before {
+        top: 3px;
+        left: -2px;
+        width: 30px;
+        transform-origin: 100% 50%;
+        border-radius: 100px 0 0 100px;
+    }
+
+    .check-icon::after {
+        top: 0;
+        left: 30px;
+        width: 60px;
+        transform-origin: 0 50%;
+        border-radius: 0 100px 100px 0;
+        animation: rotate-circle 4.25s ease-in;
+    }
+
+    .icon-line {
+        height: 5px;
+        background-color: #4CAF50;
+        display: block;
+        border-radius: 2px;
+        position: absolute;
+        z-index: 10;
+    }
+
+    .icon-line.line-tip {
+        top: 46px;
+        left: 14px;
+        width: 25px;
+        transform: rotate(45deg);
+        animation: icon-line-tip 0.75s;
+    }
+
+    .icon-line.line-long {
+        top: 38px;
+        right: 8px;
+        width: 47px;
+        transform: rotate(-45deg);
+        animation: icon-line-long 0.75s;
+    }
+
+    .icon-circle {
+        top: -4px;
+        left: -4px;
+        z-index: 10;
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        position: absolute;
+        box-sizing: content-box;
+        border: 4px solid rgba(76, 175, 80, .5);
+    }
+
+    .icon-fix {
+        top: 8px;
+        width: 5px;
+        left: 26px;
+        z-index: 1;
+        height: 85px;
+        position: absolute;
+        transform: rotate(-45deg);
+        background-color: #fff;
+    }
+
+    @@keyframes rotate-circle {
+        0% {
+            transform: rotate(-45deg);
+        }
+        5% {
+            transform: rotate(-45deg);
+        }
+        12% {
+            transform: rotate(-405deg);
+        }
+        100% {
+            transform: rotate(-405deg);
+        }
+    }
+
+    @@keyframes icon-line-tip {
+        0% {
+            width: 0;
+            left: 1px;
+            top: 19px;
+        }
+        54% {
+            width: 0;
+            left: 1px;
+            top: 19px;
+        }
+        70% {
+            width: 50px;
+            left: -8px;
+            top: 37px;
+        }
+        84% {
+            width: 17px;
+            left: 21px;
+            top: 48px;
+        }
+        100% {
+            width: 25px;
+            left: 14px;
+            top: 45px;
+        }
+    }
+
+    @@keyframes icon-line-long {
+        0% {
+            width: 0;
+            right: 46px;
+            top: 54px;
+        }
+        65% {
+            width: 0;
+            right: 46px;
+            top: 54px;
+        }
+        84% {
+            width: 55px;
+            right: 0px;
+            top: 35px;
+        }
+        100% {
+            width: 47px;
+            right: 8px;
+            top: 38px;
+        }
+    }
+</style>

@@ -1,0 +1,196 @@
+@model List<TrendyolClone.Models.DTOs.SiparisDetayDto>
+@{
+    ViewData["Title"] = "Siparişlerim";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3><i class="fas fa-box me-2"></i>Siparişlerim</h3>
+                <a asp-controller="Account" asp-action="Profile" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left me-2"></i>Hesabıma Dön
+                </a>
+            </div>
+
+            @if (Model != null && Model.Any())
+            {
+                @foreach (var siparis in Model)
+                {
+                    <div class="card mb-3 order-card">
+                        <div class="card-header bg-white">
+                            <div class="row align-items-center">
+                                <div class="col-md-3">
+                                    <small class="text-muted">Sipariş No</small>
+                                    <h6 class="mb-0">@siparis.SiparisNo</h6>
+                                </div>
+                                <div class="col-md-3">
+                                    <small class="text-muted">Tarih</small>
+                                    <h6 class="mb-0">@siparis.SiparisTarihi.ToString("dd MMM yyyy")</h6>
+                                </div>
+                                <div class="col-md-3">
+                                    <small class="text-muted">Tutar</small>
+                                    <h6 class="mb-0 text-primary">@siparis.ToplamTutar.ToString("C")</h6>
+                                </div>
+                                <div class="col-md-3">
+                                    <small class="text-muted">Durum</small>
+                                    <h6 class="mb-0">
+                                        @switch (siparis.Durum)
+                                        {
+                                            case TrendyolClone.Models.SiparisDurumu.Beklemede:
+                                                <span class="badge bg-warning">⏳ Beklemede</span>
+                                                break;
+                                            case TrendyolClone.Models.SiparisDurumu.Onaylandi:
+                                                <span class="badge bg-info">✓ Onaylandı</span>
+                                                break;
+                                            case TrendyolClone.Models.SiparisDurumu.Hazirlaniyor:
+                                                <span class="badge bg-info">📦 Hazırlanıyor</span>
+                                                break;
+                                            case TrendyolClone.Models.SiparisDurumu.Kargoda:
+                                                <span class="badge bg-primary">🚚 Kargoda</span>
+                                                break;
+                                            case TrendyolClone.Models.SiparisDurumu.TeslimEdildi:
+                                                <span class="badge bg-success">✓ Teslim Edildi</span>
+                                                break;
+                                            case TrendyolClone.Models.SiparisDurumu.IptalEdildi:
+                                                <span class="badge bg-danger">✗ İptal Edildi</span>
+                                                break;
+                                        }
+                                    </h6>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <!-- Ürünler -->
+                            <div class="mb-3">
+                                @foreach (var urun in siparis.Urunler.Take(3))
+                                {
+                                    <div class="d-flex align-items-center mb-2">
+                                        <img src="@(string.IsNullOrEmpty(urun.ResimUrl) ? "/images/no-image.jpg" : urun.ResimUrl)" 
+                                             alt="@urun.UrunAdi" 
+                                             class="me-3" 
+                                             style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">
+                                        <div class="flex-grow-1">
+                                            <small class="d-block fw-bold">@urun.UrunAdi</small>
+                                            <small class="text-muted">@urun.Adet adet x @urun.BirimFiyat.ToString("C")</small>
+                                        </div>
+                                        <strong class="text-primary">@urun.ToplamFiyat.ToString("C")</strong>
+                                    </div>
+                                }
+                                @if (siparis.Urunler.Count > 3)
+                                {
+                                    <small class="text-muted">+@(siparis.Urunler.Count - 3) ürün daha</small>
+                                }
+                            </div>
+
+                            <!-- Kargo Bilgisi -->
+                            @if (!string.IsNullOrEmpty(siparis.KargoTakipNo))
+                            {
+                                <div class="alert alert-info mb-3">
+                                    <i class="fas fa-truck me-2"></i>
+                                    <strong>@siparis.KargoFirmasi</strong> - Takip No: @siparis.KargoTakipNo
+                                    @if (siparis.TahminiTeslimatTarihi.HasValue)
+                                    {
+                                        <br><small>Tahmini Teslimat: @siparis.TahminiTeslimatTarihi.Value.ToString("dd MMM yyyy")</small>
+                                    }
+                                </div>
+                            }
+
+                            <!-- İade Bilgisi -->
+                            @if (siparis.IadeTalebiVarMi)
+                            {
+                                <div class="alert alert-warning mb-3">
+                                    <i class="fas fa-undo me-2"></i>
+                                    İade talebi mevcut - Durum: <strong>@siparis.IadeDurumu</strong>
+                                </div>
+                            }
+
+                            <!-- Aksiyonlar -->
+                            <div class="d-flex gap-2 flex-wrap">
+                                <a asp-action="Details" asp-route-id="@siparis.Id" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye me-1"></i>Detaylar
+                                </a>
+
+                                @if (!string.IsNullOrEmpty(siparis.KargoTakipNo))
+                                {
+                                    <a asp-action="Track" asp-route-id="@siparis.Id" class="btn btn-sm btn-outline-info">
+                                        <i class="fas fa-map-marker-alt me-1"></i>Kargo Takip
+                                    </a>
+                                }
+
+                                @if (!string.IsNullOrEmpty(siparis.FaturaNo))
+                                {
+                                    <a asp-action="Invoice" asp-route-id="@siparis.Id" class="btn btn-sm btn-outline-secondary">
+                                        <i class="fas fa-file-invoice me-1"></i>Fatura
+                                    </a>
+                                }
+
+                                @if (siparis.Durum == TrendyolClone.Models.SiparisDurumu.TeslimEdildi && !siparis.IadeTalebiVarMi)
+                                {
+                                    <a asp-action="Return" asp-route-id="@siparis.Id" class="btn btn-sm btn-outline-warning">
+                                        <i class="fas fa-undo me-1"></i>İade Talebi
+                                    </a>
+                                }
+
+                                @if (siparis.Durum == TrendyolClone.Models.SiparisDurumu.Beklemede || siparis.Durum == TrendyolClone.Models.SiparisDurumu.Onaylandi)
+                                {
+                                    <button class="btn btn-sm btn-outline-danger cancel-order" data-order-id="@siparis.Id">
+                                        <i class="fas fa-times me-1"></i>İptal Et
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="card text-center py-5">
+                    <div class="card-body">
+                        <i class="fas fa-box-open fa-4x text-muted mb-3"></i>
+                        <h4>Henüz siparişiniz yok</h4>
+                        <p class="text-muted">Alışverişe başlamak için ürünleri keşfedin!</p>
+                        <a asp-controller="Product" asp-action="Index" class="btn btn-primary">
+                            <i class="fas fa-shopping-bag me-2"></i>Alışverişe Başla
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <style>
+        .order-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .order-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+    </style>
+
+    <script>
+        $(document).ready(function() {
+            $('.cancel-order').click(function() {
+                const orderId = $(this).data('order-id');
+                const neden = prompt('İptal nedeni (opsiyonel):');
+                
+                if (confirm('Siparişi iptal etmek istediğinizden emin misiniz?')) {
+                    $.post('@Url.Action("Cancel")', {
+                        id: orderId,
+                        neden: neden || 'Kullanıcı isteği'
+                    }, function(response) {
+                        if (response.success) {
+                            alert(response.message);
+                            location.reload();
+                        } else {
+                            alert(response.message);
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+}

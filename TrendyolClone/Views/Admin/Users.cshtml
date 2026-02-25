@@ -1,0 +1,194 @@
+﻿@model List<TrendyolClone.Models.Kullanici>
+@{
+    ViewData["Title"] = "Kullanıcı Yönetimi";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-users me-2"></i>Kullanıcı Yönetimi</h2>
+    <div class="d-flex gap-2">
+        <span class="badge bg-primary fs-6">Toplam: @Model.Count</span>
+        <span class="badge bg-success fs-6">Aktif: @Model.Count(u => u.Aktif)</span>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" Rol="alert">
+        <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Ad Soyad</th>
+                        <th>E-posta</th>
+                        <th>Telefon</th>
+                        <th>Rol</th>
+                        <th>Üyelik Tarihi</th>
+                        <th>Durum</th>
+                        <th>İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var Kullanici in Model)
+                    {
+                        <tr>
+                            <td>@Kullanici.Id</td>
+                            <td>@Kullanici.Ad @Kullanici.Soyad</td>
+                            <td>@Kullanici.Email</td>
+                            <td>@Kullanici.TelefonNumarasi</td>
+                            <td>
+                                @if (Kullanici.Rol != null)
+                                {
+                                    var badgeClass = Kullanici.Rol.Ad switch
+                                    {
+                                        "Müşteri" => "bg-primary",
+                                        "Premium Müşteri" => "bg-warning text-dark",
+                                        "VIP Müşteri" => "bg-danger",
+                                        "Satış Temsilcisi" => "bg-success",
+                                        "Moderatör" => "bg-info",
+                                        _ => "bg-secondary"
+                                    };
+                                    <span class="badge @badgeClass">@Kullanici.Rol.Ad</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Rol Yok</span>
+                                }
+                            </td>
+                            <td>@Kullanici.OlusturmaTarihi.ToString("dd.MM.yyyy")</td>
+                            <td>
+                                @if (Kullanici.Aktif)
+                                {
+                                    <span class="badge bg-success">Aktif</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">Pasif</span>
+                                }
+                            </td>
+                            <td>
+                                <a asp-action="EditUser" asp-route-id="@Kullanici.Id" class="btn btn-sm btn-outline-primary me-1">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button class="btn btn-sm btn-outline-info me-1" onclick="showRoleModal(@Kullanici.Id, '@Kullanici.Ad @Kullanici.Soyad', @(Kullanici.RolId?.ToString() ?? "null"))" title="Rol Ata">
+                                    <i class="fas fa-user-tag"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-warning me-1" onclick="toggleUserStatus(@Kullanici.Id)">
+                                    <i class="fas fa-toggle-on"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deleteUser(@Kullanici.Id)">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Rol Atama Modal -->
+<div class="modal fade" id="roleModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Rol Atama</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="roleForm">
+                <div class="modal-body">
+                    <input type="hidden" id="selectedKullaniciId" name="userId">
+                    <div class="mb-3">
+                        <p><strong>Kullanıcı:</strong> <span id="selectedKullaniciAdi"></span></p>
+                        <div id="currentRoleInfo"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Yeni Rol Seçin</label>
+                        <select class="form-select" name="roleId" required>
+                            <option value="">Rol Seçin</option>
+                            @if (ViewBag.Roles != null)
+                            {
+                                @foreach (var Rol in (List<TrendyolClone.Models.Rol>)ViewBag.Roles)
+                                {
+                                    <option value="@Rol.Id">@Rol.Ad - @Rol.Aciklama</option>
+                                }
+                            }
+                        </select>
+                        <small class="text-muted">Mevcut rol değiştirilecek</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-primary">Rol Ata</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function deleteUser(id) {
+            if (confirm('Bu kullanıcıyı silmek istediğinizden emin misiniz?')) {
+                $.post('@Url.Action("DeleteUser", "Admin")', { id: id }, function(data) {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Hata: ' + data.message);
+                    }
+                });
+            }
+        }
+
+        function toggleUserStatus(id) {
+            $.post('@Url.Action("ToggleUserStatus", "Admin")', { id: id }, function(data) {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Hata: ' + data.message);
+                }
+            });
+        }
+
+        function showRoleModal(KullaniciId, KullaniciAdi, currentRoleId) {
+            $('#selectedKullaniciId').val(KullaniciId);
+            $('#selectedKullaniciAdi').text(KullaniciAdi);
+            
+            // Mevcut rolü seç
+            var roleSelect = $('select[name="roleId"]');
+            roleSelect.val(currentRoleId || '');
+            
+            // Mevcut rol bilgisini göster
+            if (currentRoleId) {
+                var selectedRoleName = roleSelect.find('option:selected').text();
+                $('#currentRoleInfo').html('<small class="text-info"><i class="fas fa-info-circle me-1"></i>Mevcut rol: ' + selectedRoleName + '</small>');
+            } else {
+                $('#currentRoleInfo').html('<small class="text-warning"><i class="fas fa-exclamation-triangle me-1"></i>Henüz rol atanmamış</small>');
+            }
+            
+            $('#roleModal').modal('show');
+        }
+
+        // Rol atama
+        $('#roleForm').submit(function(e) {
+            e.preventDefault();
+            
+            $.post('@Url.Action("AssignRole", "Admin")', $(this).serialize(), function(data) {
+                if (data.success) {
+                    $('#roleModal').modal('hide');
+                    location.reload();
+                } else {
+                    alert('Hata: ' + data.message);
+                }
+            });
+        });
+    </script>
+}

@@ -1,0 +1,118 @@
+@model List<TrendyolClone.Models.DTOs.SaticiSiparisDto>
+@{
+    ViewData["Title"] = "Siparişlerim";
+    var durum = ViewBag.Durum as TrendyolClone.Models.SaticiSiparisDurum?;
+}
+
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2>Siparişlerim</h2>
+        </div>
+    </div>
+
+    <!-- Filtreler -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="btn-group" role="group">
+                <a href="@Url.Action("Orders")" class="btn @(durum == null ? "btn-primary" : "btn-outline-primary")">
+                    Tümü (@Model.Count)
+                </a>
+                <a href="@Url.Action("Orders", new { durum = 0 })" class="btn @(durum == TrendyolClone.Models.SaticiSiparisDurum.YeniSiparis ? "btn-primary" : "btn-outline-primary")">
+                    Yeni Siparişler
+                </a>
+                <a href="@Url.Action("Orders", new { durum = 1 })" class="btn @(durum == TrendyolClone.Models.SaticiSiparisDurum.Hazirlaniyor ? "btn-primary" : "btn-outline-primary")">
+                    Hazırlanıyor
+                </a>
+                <a href="@Url.Action("Orders", new { durum = 2 })" class="btn @(durum == TrendyolClone.Models.SaticiSiparisDurum.KargoyaVerildi ? "btn-primary" : "btn-outline-primary")">
+                    Kargoda
+                </a>
+                <a href="@Url.Action("Orders", new { durum = 3 })" class="btn @(durum == TrendyolClone.Models.SaticiSiparisDurum.TeslimEdildi ? "btn-primary" : "btn-outline-primary")">
+                    Teslim Edildi
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sipariş Listesi -->
+    <div class="card">
+        <div class="card-body p-0">
+            @if (Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Sipariş No</th>
+                                <th>Ürün</th>
+                                <th>Müşteri</th>
+                                <th>Adet</th>
+                                <th>Tutar</th>
+                                <th>Kazanç</th>
+                                <th>Durum</th>
+                                <th>Tarih</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var siparis in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <a href="@Url.Action("OrderDetails", new { id = siparis.Id })">
+                                            <strong>@siparis.SiparisNo</strong>
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <img src="@(siparis.UrunResmi ?? "/images/no-image.png")" alt="@siparis.UrunAdi" class="rounded me-2" style="width: 50px; height: 50px; object-fit: cover;">
+                                            <span>@siparis.UrunAdi</span>
+                                        </div>
+                                    </td>
+                                    <td>@siparis.MusteriAdi</td>
+                                    <td>@siparis.Adet</td>
+                                    <td>@siparis.ToplamTutar.ToString("C")</td>
+                                    <td><strong class="text-success">@siparis.SaticiKazanci.ToString("C")</strong></td>
+                                    <td>
+                                        @switch (siparis.Durum)
+                                        {
+                                            case TrendyolClone.Models.SaticiSiparisDurum.YeniSiparis:
+                                                <span class="badge bg-danger">Yeni</span>
+                                                break;
+                                            case TrendyolClone.Models.SaticiSiparisDurum.Hazirlaniyor:
+                                                <span class="badge bg-warning">Hazırlanıyor</span>
+                                                break;
+                                            case TrendyolClone.Models.SaticiSiparisDurum.KargoyaVerildi:
+                                                <span class="badge bg-info">Kargoda</span>
+                                                break;
+                                            case TrendyolClone.Models.SaticiSiparisDurum.TeslimEdildi:
+                                                <span class="badge bg-success">Teslim Edildi</span>
+                                                break;
+                                            case TrendyolClone.Models.SaticiSiparisDurum.IptalEdildi:
+                                                <span class="badge bg-dark">İptal</span>
+                                                break;
+                                        }
+                                    </td>
+                                    <td>@siparis.SiparisTarihi.ToString("dd.MM.yyyy HH:mm")</td>
+                                    <td>
+                                        <a href="@Url.Action("OrderDetails", new { id = siparis.Id })" class="btn btn-sm btn-outline-primary">
+                                            Detay
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="bi bi-cart-x" style="font-size: 4rem; color: #ccc;"></i>
+                    <h4 class="mt-3">Sipariş bulunamadı</h4>
+                    <p class="text-muted">Henüz sipariş almadınız veya seçili filtrede sipariş yok</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>

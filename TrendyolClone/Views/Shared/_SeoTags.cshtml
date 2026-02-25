@@ -1,0 +1,44 @@
+@using TrendyolClone.Models.DTOs
+@model SeoMetaDto
+
+@if (Model != null)
+{
+    <title>@Model.Baslik</title>
+    <meta name="description" content="@Model.Aciklama" />
+    <meta name="keywords" content="@Model.Anahtar" />
+    
+    @if (!string.IsNullOrEmpty(Model.CanonicalUrl))
+    {
+        <link rel="canonical" href="@Model.CanonicalUrl" />
+    }
+
+    @if (!Model.Indexlenebilir || !Model.TakipEdilebilir)
+    {
+        var robotsContent = "";
+        if (!Model.Indexlenebilir) robotsContent += "noindex";
+        if (!Model.TakipEdilebilir) robotsContent += (robotsContent.Length > 0 ? ", " : "") + "nofollow";
+        <meta name="robots" content="@robotsContent" />
+    }
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="@(Model.OgBaslik ?? Model.Baslik)" />
+    <meta property="og:description" content="@(Model.OgAciklama ?? Model.Aciklama)" />
+    @if (!string.IsNullOrEmpty(Model.OgResim))
+    {
+        <meta property="og:image" content="@Model.OgResim" />
+    }
+    @if (!string.IsNullOrEmpty(Model.OgUrl))
+    {
+        <meta property="og:url" content="@Model.OgUrl" />
+    }
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="@(Model.OgBaslik ?? Model.Baslik)" />
+    <meta name="twitter:description" content="@(Model.OgAciklama ?? Model.Aciklama)" />
+    @if (!string.IsNullOrEmpty(Model.OgResim))
+    {
+        <meta name="twitter:image" content="@Model.OgResim" />
+    }
+}

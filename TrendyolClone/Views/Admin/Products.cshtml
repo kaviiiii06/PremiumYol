@@ -1,0 +1,102 @@
+﻿@model List<TrendyolClone.Models.Urun>
+@{
+    ViewData["Title"] = "Ürün Yönetimi";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-box me-2"></i>Ürün Yönetimi</h2>
+    <a asp-action="AddProduct" class="btn btn-primary">
+        <i class="fas fa-plus me-2"></i>Yeni Ürün
+    </a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" Rol="alert">
+        <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Resim</th>
+                        <th>Ürün Adı</th>
+                        <th>Kategori</th>
+                        <th>Fiyat</th>
+                        <th>Stok</th>
+                        <th>İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var Urun in Model)
+                    {
+                        <tr>
+                            <td>@Urun.Id</td>
+                            <td>
+                                <img src="@(string.IsNullOrEmpty(Urun.ResimUrl) ? "/images/no-image.jpg" : Urun.ResimUrl)" 
+                                     alt="@Urun.Ad" style="width: 50px; height: 50px; object-fit: cover;" class="rounded">
+                            </td>
+                            <td>@Urun.Ad</td>
+                            <td>@Urun.Kategori?.Ad</td>
+                            <td>
+                                @if (Urun.IndirimliFiyat.HasValue)
+                                {
+                                    <span class="text-decoration-line-through text-muted">@Urun.Fiyat.ToString("C")</span><br>
+                                    <span class="text-danger fw-bold">@Urun.IndirimliFiyat.Value.ToString("C")</span>
+                                }
+                                else
+                                {
+                                    <span class="fw-bold">@Urun.Fiyat.ToString("C")</span>
+                                }
+                            </td>
+                            <td>
+                                @if (Urun.Stok > 10)
+                                {
+                                    <span class="badge bg-success">@Urun.Stok</span>
+                                }
+                                else if (Urun.Stok > 0)
+                                {
+                                    <span class="badge bg-warning">@Urun.Stok</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">Tükendi</span>
+                                }
+                            </td>
+                            <td>
+                                <a asp-action="EditProduct" asp-route-id="@Urun.Id" class="btn btn-sm btn-outline-primary me-1">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deleteProduct(@Urun.Id)">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function deleteProduct(id) {
+            if (confirm('Bu ürünü silmek istediğinizden emin misiniz?')) {
+                $.post('@Url.Action("DeleteProduct", "Admin")', { id: id }, function(data) {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Hata: ' + data.message);
+                    }
+                });
+            }
+        }
+    </script>
+}

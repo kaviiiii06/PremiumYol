@@ -1,0 +1,98 @@
+@model TrendyolClone.Models.BildirimSablonu
+@{
+    ViewData["Title"] = "Yeni Şablon Oluştur";
+}
+
+<div class="container my-5">
+    <div class="row">
+        <div class="col-md-10 mx-auto">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-plus"></i> Yeni Bildirim Şablonu
+                    </h4>
+                </div>
+                <div class="card-body">
+                    @if (TempData["Hata"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show">
+                            @TempData["Hata"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    <form asp-action="CreateTemplate" method="post">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Kod" class="form-label">Şablon Kodu</label>
+                                <input asp-for="Kod" class="form-control" placeholder="SIPARIS_ONAY" required>
+                                <small class="text-muted">Benzersiz bir kod girin (örn: SIPARIS_ONAY)</small>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Ad" class="form-label">Şablon Adı</label>
+                                <input asp-for="Ad" class="form-control" placeholder="Sipariş Onay Bildirimi" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Turu" class="form-label">Bildirim Türü</label>
+                            <select asp-for="Turu" class="form-select" required>
+                                <option value="1">Email</option>
+                                <option value="2">SMS</option>
+                                <option value="3">Push Notification</option>
+                                <option value="4">In-App</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Konu" class="form-label">Konu/Başlık</label>
+                            <input asp-for="Konu" class="form-control" placeholder="Siparişiniz Alındı" required>
+                            <small class="text-muted">Parametreler için {parametre} formatını kullanın</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Icerik" class="form-label">İçerik</label>
+                            <textarea asp-for="Icerik" class="form-control" rows="10" required></textarea>
+                            <small class="text-muted">
+                                HTML kullanabilirsiniz. Parametreler: {AdSoyad}, {SiparisNo}, {ToplamTutar}, vb.
+                            </small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Aciklama" class="form-label">Açıklama (Opsiyonel)</label>
+                            <textarea asp-for="Aciklama" class="form-control" rows="3"></textarea>
+                        </div>
+
+                        <div class="form-check mb-3">
+                            <input asp-for="AktifMi" class="form-check-input" type="checkbox" checked>
+                            <label asp-for="AktifMi" class="form-check-label">
+                                Şablon aktif
+                            </label>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <strong>Örnek Parametreler:</strong>
+                            <ul class="mb-0">
+                                <li><code>{AdSoyad}</code> - Kullanıcı adı</li>
+                                <li><code>{SiparisNo}</code> - Sipariş numarası</li>
+                                <li><code>{ToplamTutar}</code> - Toplam tutar</li>
+                                <li><code>{KargoTakipNo}</code> - Kargo takip numarası</li>
+                                <li><code>{KargoFirma}</code> - Kargo firması</li>
+                            </ul>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Şablonu Kaydet
+                            </button>
+                            <a asp-action="Templates" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left"></i> Geri Dön
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

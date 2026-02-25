@@ -1,0 +1,220 @@
+@model TrendyolClone.Models.DTOs.SiparisListeResult
+@{
+    ViewData["Title"] = "Sipariş Yönetimi";
+    var filtre = ViewBag.Filtre as TrendyolClone.Models.DTOs.SiparisFiltre;
+    var durumIstatistikleri = ViewBag.DurumIstatistikleri as Dictionary<TrendyolClone.Models.SiparisDurumu, int>;
+}
+
+<div class="container-fluid my-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-shopping-bag"></i> Sipariş Yönetimi</h2>
+        <a asp-action="Pending" class="btn btn-warning">
+            <i class="fas fa-clock"></i> Bekleyen Siparişler
+        </a>
+    </div>
+
+    <!-- Durum İstatistikleri -->
+    <div class="row mb-4">
+        @if (durumIstatistikleri != null)
+        {
+            <div class="col-md-2 mb-2">
+                <div class="card bg-secondary text-white">
+                    <div class="card-body text-center py-2">
+                        <h4 class="mb-0">@durumIstatistikleri.GetValueOrDefault(TrendyolClone.Models.SiparisDurumu.Beklemede)</h4>
+                        <small>Beklemede</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2 mb-2">
+                <div class="card bg-info text-white">
+                    <div class="card-body text-center py-2">
+                        <h4 class="mb-0">@durumIstatistikleri.GetValueOrDefault(TrendyolClone.Models.SiparisDurumu.Onaylandi)</h4>
+                        <small>Onaylandı</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2 mb-2">
+                <div class="card bg-warning text-white">
+                    <div class="card-body text-center py-2">
+                        <h4 class="mb-0">@durumIstatistikleri.GetValueOrDefault(TrendyolClone.Models.SiparisDurumu.Hazirlaniyor)</h4>
+                        <small>Hazırlanıyor</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2 mb-2">
+                <div class="card bg-primary text-white">
+                    <div class="card-body text-center py-2">
+                        <h4 class="mb-0">@durumIstatistikleri.GetValueOrDefault(TrendyolClone.Models.SiparisDurumu.KargoyaVerildi)</h4>
+                        <small>Kargoda</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2 mb-2">
+                <div class="card bg-success text-white">
+                    <div class="card-body text-center py-2">
+                        <h4 class="mb-0">@durumIstatistikleri.GetValueOrDefault(TrendyolClone.Models.SiparisDurumu.TeslimEdildi)</h4>
+                        <small>Teslim Edildi</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2 mb-2">
+                <div class="card bg-danger text-white">
+                    <div class="card-body text-center py-2">
+                        <h4 class="mb-0">@durumIstatistikleri.GetValueOrDefault(TrendyolClone.Models.SiparisDurumu.IptalEdildi)</h4>
+                        <small>İptal</small>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Filtreler -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Arama</label>
+                    <input type="text" name="arama" class="form-control" value="@filtre?.AramaTerimi" placeholder="Sipariş no, müşteri adı...">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Durum</label>
+                    <select name="durum" class="form-select">
+                        <option value="">Tümü</option>
+                        @foreach (TrendyolClone.Models.SiparisDurumu d in Enum.GetValues(typeof(TrendyolClone.Models.SiparisDurumu)))
+                        {
+                            <option value="@((int)d)" selected="@(filtre?.Durum == d)">@d</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Başlangıç</label>
+                    <input type="date" name="baslangic" class="form-control" value="@filtre?.BaslangicTarihi?.ToString("yyyy-MM-dd")">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Bitiş</label>
+                    <input type="date" name="bitis" class="form-control" value="@filtre?.BitisTarihi?.ToString("yyyy-MM-dd")">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Sıralama</label>
+                    <select name="siralama" class="form-select">
+                        <option value="tarih_desc" selected="@(filtre?.Siralama == "tarih_desc")">Tarih (Yeni)</option>
+                        <option value="tarih_asc" selected="@(filtre?.Siralama == "tarih_asc")">Tarih (Eski)</option>
+                        <option value="tutar_desc" selected="@(filtre?.Siralama == "tutar_desc")">Tutar (Yüksek)</option>
+                        <option value="tutar_asc" selected="@(filtre?.Siralama == "tutar_asc")">Tutar (Düşük)</option>
+                    </select>
+                </div>
+                <div class="col-md-1 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Mesajlar -->
+    @if (TempData["Mesaj"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+            @TempData["Mesaj"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["Hata"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show">
+            @TempData["Hata"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Sipariş Listesi -->
+    <div class="card">
+        <div class="card-header">
+            <strong>@Model.ToplamKayit sipariş bulundu</strong>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Sipariş No</th>
+                            <th>Müşteri</th>
+                            <th>Tutar</th>
+                            <th>Ürün</th>
+                            <th>Durum</th>
+                            <th>Tarih</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var siparis in Model.Siparisler)
+                        {
+                            <tr>
+                                <td><strong>@siparis.SiparisNo</strong></td>
+                                <td>
+                                    <div>@siparis.KullaniciAdi</div>
+                                    <small class="text-muted">@siparis.Email</small>
+                                </td>
+                                <td><strong>₺@siparis.ToplamTutar.ToString("N2")</strong></td>
+                                <td>@siparis.UrunSayisi adet</td>
+                                <td>
+                                    @{
+                                        var badgeClass = siparis.Durum switch
+                                        {
+                                            TrendyolClone.Models.SiparisDurumu.Beklemede => "bg-secondary",
+                                            TrendyolClone.Models.SiparisDurumu.Onaylandi => "bg-info",
+                                            TrendyolClone.Models.SiparisDurumu.Hazirlaniyor => "bg-warning",
+                                            TrendyolClone.Models.SiparisDurumu.KargoyaVerildi => "bg-primary",
+                                            TrendyolClone.Models.SiparisDurumu.TeslimEdildi => "bg-success",
+                                            TrendyolClone.Models.SiparisDurumu.IptalEdildi => "bg-danger",
+                                            _ => "bg-secondary"
+                                        };
+                                    }
+                                    <span class="badge @badgeClass">@siparis.DurumAdi</span>
+                                </td>
+                                <td>
+                                    <small>@siparis.SiparisTarihi.ToString("dd.MM.yyyy HH:mm")</small>
+                                </td>
+                                <td>
+                                    <a asp-action="Details" asp-route-id="@siparis.Id" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i> Detay
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sayfalama -->
+    @if (Model.ToplamSayfa > 1)
+    {
+        <nav class="mt-4">
+            <ul class="pagination justify-content-center">
+                @if (Model.MevcutSayfa > 1)
+                {
+                    <li class="page-item">
+                        <a class="page-link" asp-action="Index" asp-route-sayfa="@(Model.MevcutSayfa - 1)" asp-route-arama="@filtre?.AramaTerimi" asp-route-durum="@((int?)filtre?.Durum)">Önceki</a>
+                    </li>
+                }
+
+                @for (int i = Math.Max(1, Model.MevcutSayfa - 2); i <= Math.Min(Model.ToplamSayfa, Model.MevcutSayfa + 2); i++)
+                {
+                    <li class="page-item @(i == Model.MevcutSayfa ? "active" : "")">
+                        <a class="page-link" asp-action="Index" asp-route-sayfa="@i" asp-route-arama="@filtre?.AramaTerimi" asp-route-durum="@((int?)filtre?.Durum)">@i</a>
+                    </li>
+                }
+
+                @if (Model.MevcutSayfa < Model.ToplamSayfa)
+                {
+                    <li class="page-item">
+                        <a class="page-link" asp-action="Index" asp-route-sayfa="@(Model.MevcutSayfa + 1)" asp-route-arama="@filtre?.AramaTerimi" asp-route-durum="@((int?)filtre?.Durum)">Sonraki</a>
+                    </li>
+                }
+            </ul>
+        </nav>
+    }
+</div>

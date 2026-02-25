@@ -1,0 +1,236 @@
+﻿@model TrendyolClone.Models.SiteAyarlari
+@{
+    ViewData["Title"] = "Site Ayarları";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-cog me-2"></i>Site Ayarları</h2>
+    <div>
+        <a asp-action="Dashboard" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Dashboard'a Dön
+        </a>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" Rol="alert">
+        <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" Rol="alert">
+        <i class="fas fa-exclamation-circle me-2"></i>@TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="fas fa-edit me-2"></i>Site Bilgilerini Düzenle</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" asp-action="UpdateSiteSettings">
+                    <input type="hidden" asp-for="Id" />
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-tag me-1 text-primary"></i>Site Adı
+                            </label>
+                            <input type="text" class="form-control" asp-for="SiteAdi" placeholder="PremiumYol" required>
+                            <small class="text-muted">Navbar'da görünecek site adı</small>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-info-circle me-1 text-primary"></i>Site Açıklaması
+                            </label>
+                            <input type="text" class="form-control" asp-for="SiteAciklamasi" placeholder="Premium E-Ticaret Platformu">
+                            <small class="text-muted">Meta description için kullanılır</small>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-image me-1 text-primary"></i>Logo URL (İsteğe Bağlı)
+                            </label>
+                            <input type="url" class="form-control" asp-for="LogoUrl" placeholder="https://example.com/logo.png">
+                            <small class="text-muted">Logo resmi URL'si (boş bırakılırsa ikon kullanılır)</small>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-icons me-1 text-primary"></i>Logo İkonu
+                            </label>
+                            <input type="text" class="form-control" asp-for="LogoIcon" placeholder="fas fa-crown">
+                            <small class="text-muted">Font Awesome ikon sınıfı (örn: fas fa-crown)</small>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-envelope me-1 text-primary"></i>İletişim E-postası
+                            </label>
+                            <input type="email" class="form-control" asp-for="IletisimEmail" placeholder="info@onewearr.shop">
+                            <small class="text-muted">Footer'da görünecek e-posta adresi</small>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-phone me-1 text-primary"></i>İletişim Telefonu
+                            </label>
+                            <input type="tel" class="form-control" asp-for="IletisimTelefon" placeholder="0538 969 36 06">
+                            <small class="text-muted">Footer'da görünecek telefon numarası</small>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-copyright me-1 text-primary"></i>Footer Metni
+                        </label>
+                        <input type="text" class="form-control" asp-for="AltBilgiMetni" placeholder="Tüm hakları saklıdır.">
+                        <small class="text-muted">Footer'da görünecek telif hakkı metni</small>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Ayarları Kaydet
+                        </button>
+                        <button type="button" class="btn btn-outline-info" onclick="previewChanges()">
+                            <i class="fas fa-eye me-2"></i>Önizleme
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-light">
+                <h6 class="mb-0"><i class="fas fa-eye me-2"></i>Canlı Önizleme</h6>
+            </div>
+            <div class="card-body">
+                <div class="preview-navbar bg-white border rounded p-2 mb-3">
+                    <div class="d-flex align-items-center">
+                        <span id="preview-icon" class="@Model.LogoIcon me-2 text-primary"></span>
+                        <span id="preview-name" class="fw-bold">@Model.SiteAdi</span>
+                    </div>
+                </div>
+                
+                <div class="preview-footer bg-light border rounded p-2">
+                    <small>
+                        &copy; 2025 <span id="preview-footer-name">@Model.SiteAdi</span> - 
+                        <span id="preview-footer-text">@Model.AltBilgiMetni</span>
+                    </small>
+                    <br>
+                    <small class="text-muted">
+                        <span id="preview-email">@Model.IletisimEmail</span> | 
+                        <span id="preview-phone">@Model.IletisimTelefon</span>
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header bg-light">
+                <h6 class="mb-0"><i class="fas fa-lightbulb me-2"></i>İpuçları</h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        <small>Logo URL'si boş bırakılırsa ikon kullanılır</small>
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        <small>Font Awesome ikonları kullanabilirsiniz</small>
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check text-success me-2"></i>
+                        <small>Değişiklikler anında uygulanır</small>
+                    </li>
+                    <li>
+                        <i class="fas fa-check text-success me-2"></i>
+                        <small>Önizleme ile sonucu görebilirsiniz</small>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Canlı önizleme
+        function updatePreview() {
+            const SiteAdi = document.querySelector('input[name="SiteAdi"]').value || 'PremiumYol';
+            const logoIcon = document.querySelector('input[name="LogoIcon"]').value || 'fas fa-crown';
+            const IletisimEmail = document.querySelector('input[name="IletisimEmail"]').value || 'info@onewearr.shop';
+            const IletisimTelefon = document.querySelector('input[name="IletisimTelefon"]').value || '0538 969 36 06';
+            const AltBilgiMetni = document.querySelector('input[name="AltBilgiMetni"]').value || 'Tüm hakları saklıdır.';
+
+            document.getElementById('preview-name').textContent = SiteAdi;
+            document.getElementById('preview-footer-name').textContent = SiteAdi;
+            document.getElementById('preview-footer-text').textContent = AltBilgiMetni;
+            document.getElementById('preview-email').textContent = IletisimEmail;
+            document.getElementById('preview-phone').textContent = IletisimTelefon;
+            
+            const iconElement = document.getElementById('preview-icon');
+            iconElement.className = logoIcon + ' me-2 text-primary';
+        }
+
+        // Input değişikliklerini dinle
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputs = document.querySelectorAll('input[type="text"], input[type="email"], input[type="tel"]');
+            inputs.forEach(input => {
+                input.addEventListener('input', updatePreview);
+            });
+        });
+
+        function previewChanges() {
+            updatePreview();
+            alert('Önizleme güncellendi! Sağ taraftaki önizleme panelini kontrol edin.');
+        }
+    </script>
+}
+
+<style>
+    .preview-navbar {
+        font-size: 1.1rem;
+    }
+    
+    .preview-footer {
+        font-size: 0.8rem;
+    }
+    
+    .card {
+        border: none;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        border-radius: 10px;
+    }
+    
+    .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+    
+    .btn-primary {
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        border: none;
+    }
+    
+    .btn-primary:hover {
+        background: linear-gradient(45deg, #764ba2, #667eea);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+</style>

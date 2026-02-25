@@ -1,0 +1,553 @@
+﻿@model List<TrendyolClone.Models.SepetKalemi>
+@{
+    ViewData["Title"] = "Sepetim";
+}
+
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Ana Sayfa</a></li>
+        <li class="breadcrumb-item active">Sepetim</li>
+    </ol>
+</nav>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">
+        <i class="fas fa-shopping-cart me-2 text-primary"></i>
+        <span class="gradient-text">Sepetim</span>
+    </h2>
+    @if (Model != null && Model.Any())
+    {
+        <span class="badge bg-primary rounded-pill px-3 py-2">@Model.Sum(x => x.Miktar) Ürün</span>
+    }
+</div>
+
+@if (Model != null && Model.Any())
+{
+    <div class="row g-4">
+        <!-- Cart Items -->
+        <div class="col-lg-8">
+            <div class="card border-0">
+                <div class="card-body p-0">
+                    @foreach (var item in Model)
+                    {
+                        <div class="cart-item p-4 border-bottom" id="cart-item-@item.UrunId">
+                            <div class="row align-items-center g-3">
+                                <!-- Product Image -->
+                                <div class="col-md-2 col-3">
+                                    <div class="position-relative">
+                                        <img src="@(string.IsNullOrEmpty(item.ResimUrl) ? "/images/no-image.jpg" : item.ResimUrl)" 
+                                             class="img-fluid rounded-3" alt="@item.UrunAdi" 
+                                             style="height: 100px; width: 100%; object-fit: cover;">
+                                    </div>
+                                </div>
+                                
+                                <!-- Product Info -->
+                                <div class="col-md-4 col-9">
+                                    <h6 class="mb-1 fw-bold">@item.UrunAdi</h6>
+                                    <p class="text-muted small mb-2">
+                                        Birim: <span class="fw-semibold">@item.Fiyat.ToString("C")</span>
+                                    </p>
+                                    <button class="btn btn-link text-danger p-0 small remove-item d-md-none" 
+                                            data-urun-id="@item.UrunId">
+                                        <i class="fas fa-trash me-1"></i>Kaldır
+                                    </button>
+                                </div>
+                                
+                                <!-- Quantity -->
+                                <div class="col-md-3 col-6">
+                                    <div class="quantity-control d-flex align-items-center justify-content-center">
+                                        <button class="btn btn-outline-secondary btn-sm rounded-circle miktar-btn" 
+                                                data-urun-id="@item.UrunId" data-action="decrease"
+                                                style="width: 36px; height: 36px;">
+                                            <i class="fas fa-minus"></i>
+                                        </button>
+                                        <input type="number" class="form-control text-center mx-2 miktar-input" 
+                                               value="@item.Miktar" min="1" data-urun-id="@item.UrunId" 
+                                               style="width: 60px; border-radius: var(--radius-md);">
+                                        <button class="btn btn-outline-secondary btn-sm rounded-circle miktar-btn" 
+                                                data-urun-id="@item.UrunId" data-action="increase"
+                                                style="width: 36px; height: 36px;">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Total -->
+                                <div class="col-md-2 col-4 text-end">
+                                    <span class="fw-bold price-current item-total">@item.ToplamFiyat.ToString("C")</span>
+                                </div>
+                                
+                                <!-- Remove Button -->
+                                <div class="col-md-1 col-2 text-end d-none d-md-block">
+                                    <button class="btn btn-light btn-sm rounded-circle remove-item" 
+                                            data-urun-id="@item.UrunId" title="Kaldır"
+                                            style="width: 40px; height: 40px;">
+                                        <i class="fas fa-trash text-danger"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="d-flex flex-wrap gap-2 mt-4">
+                <a asp-controller="Urun" asp-action="Index" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left me-2"></i>Alışverişe Devam
+                </a>
+                <a asp-controller="Cart" asp-action="Clear" class="btn btn-outline-danger">
+                    <i class="fas fa-trash me-2"></i>Sepeti Temizle
+                </a>
+            </div>
+        </div>
+        
+        <!-- Order Summary -->
+        <div class="col-lg-4">
+            <!-- Coupon Card -->
+            <div class="card border-0 mb-3">
+                <div class="card-header bg-transparent border-0 pb-0">
+                    <h6 class="mb-0">
+                        <i class="fas fa-tag me-2 text-primary"></i>İndirim Kuponu
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="input-group">
+                        <input type="text" id="couponCode" class="form-control" placeholder="Kupon kodu" maxlength="50">
+                        <button class="btn btn-primary" onclick="applyCoupon()">
+                            <i class="fas fa-check"></i>
+                        </button>
+                    </div>
+                    <div id="couponMessage" class="small mt-2"></div>
+                    <div id="appliedCoupon" class="alert alert-success d-flex justify-content-between align-items-center mt-2 mb-0" style="display:none !important;">
+                        <span><i class="fas fa-check-circle me-1"></i><strong id="couponCodeText"></strong></span>
+                        <button class="btn btn-sm btn-link text-danger p-0" onclick="removeCoupon()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shipping Card -->
+            <div class="card border-0 mb-3">
+                <div class="card-header bg-transparent border-0 pb-0">
+                    <h6 class="mb-0">
+                        <i class="fas fa-truck me-2 text-primary"></i>Kargo Seçimi
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <select id="shippingCity" class="form-select" onchange="calculateShipping()">
+                        <option value="">İl seçiniz</option>
+                        <option value="İstanbul">İstanbul</option>
+                        <option value="Ankara">Ankara</option>
+                        <option value="İzmir">İzmir</option>
+                        <option value="Bursa">Bursa</option>
+                        <option value="Antalya">Antalya</option>
+                        <option value="Diğer">Diğer İller</option>
+                    </select>
+                    <div id="shippingOptions" class="mt-3"></div>
+                </div>
+            </div>
+
+            <!-- Summary Card -->
+            <div class="card border-0" style="background: var(--gradient-primary);">
+                <div class="card-body text-white">
+                    <h5 class="mb-4">
+                        <i class="fas fa-receipt me-2"></i>Sipariş Özeti
+                    </h5>
+                    
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="opacity-75">Ürün Sayısı</span>
+                        <span id="total-items" class="fw-semibold">@Model.Sum(x => x.Miktar)</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="opacity-75">Ara Toplam</span>
+                        <span id="subtotal" class="fw-semibold">@Model.Sum(x => x.ToplamFiyat).ToString("C")</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2" id="discountRow" style="display:none;">
+                        <span class="opacity-75">İndirim</span>
+                        <span id="discount" class="fw-semibold text-warning">-₺0</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span class="opacity-75">Kargo</span>
+                        <span id="shipping" class="fw-semibold">Hesaplanacak</span>
+                    </div>
+                    
+                    <hr class="opacity-25">
+                    
+                    <div class="d-flex justify-content-between mb-4">
+                        <span class="fs-5">Toplam</span>
+                        <span id="total-amount" class="fs-4 fw-bold">@Model.Sum(x => x.ToplamFiyat).ToString("C")</span>
+                    </div>
+                    
+                    <a asp-controller="Cart" asp-action="Checkout" class="btn btn-light btn-lg w-100">
+                        <i class="fas fa-lock me-2"></i>Güvenli Ödeme
+                    </a>
+                    
+                    <div class="text-center mt-3">
+                        <small class="opacity-75">
+                            <i class="fas fa-shield-alt me-1"></i>256-bit SSL ile korunuyor
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Save Cart -->
+            @if (Context.Session.GetString("UserId") != null)
+            {
+                <div class="card border-0 mt-3">
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#saveCartModal">
+                                <i class="fas fa-bookmark me-2"></i>Sepeti Kaydet
+                            </button>
+                            <button class="btn btn-outline-secondary" onclick="showSavedCarts()">
+                                <i class="fas fa-history me-2"></i>Kayıtlı Sepetler
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}
+else
+{
+    <!-- Empty Cart -->
+    <div class="empty-state py-5">
+        <div class="text-center">
+            <div class="mb-4">
+                <div class="d-inline-flex align-items-center justify-content-center rounded-circle p-4" 
+                     style="background: var(--bg-glass); width: 120px; height: 120px;">
+                    <i class="fas fa-shopping-cart fa-3x text-muted"></i>
+                </div>
+            </div>
+            <h3 class="empty-state-title">Sepetiniz Boş</h3>
+            <p class="empty-state-text mb-4">Harika ürünlerimizi keşfetmeye ne dersiniz?</p>
+            <a asp-controller="Urun" asp-action="Index" class="btn btn-primary btn-lg px-5">
+                <i class="fas fa-shopping-bag me-2"></i>Alışverişe Başla
+            </a>
+        </div>
+    </div>
+}
+
+<!-- Save Cart Modal -->
+<div class="modal fade" id="saveCartModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0">
+            <div class="modal-header" style="background: var(--gradient-primary);">
+                <h5 class="modal-title text-white">
+                    <i class="fas fa-bookmark me-2"></i>Sepeti Kaydet
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Sepet Adı</label>
+                    <input type="text" class="form-control form-control-lg" id="savedCartName" 
+                           placeholder="Örn: Yılbaşı Alışverişi" maxlength="100" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Açıklama <span class="text-muted">(Opsiyonel)</span></label>
+                    <textarea class="form-control" id="savedCartDesc" rows="3" 
+                              placeholder="Notlarınızı ekleyin..." maxlength="500"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">İptal</button>
+                <button type="button" class="btn btn-primary" onclick="saveCart()">
+                    <i class="fas fa-save me-2"></i>Kaydet
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Saved Carts Modal -->
+<div class="modal fade" id="savedCartsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0">
+            <div class="modal-header" style="background: var(--gradient-info);">
+                <h5 class="modal-title text-white">
+                    <i class="fas fa-history me-2"></i>Kayıtlı Sepetler
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div id="savedCartsList"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Quantity buttons
+            $('.miktar-btn').click(function() {
+                var urunId = $(this).data('urun-id');
+                var action = $(this).data('action');
+                var input = $('input[data-urun-id="' + urunId + '"]');
+                var currentMiktar = parseInt(input.val());
+                var newMiktar = action === 'increase' ? currentMiktar + 1 : Math.max(1, currentMiktar - 1);
+                updateMiktar(urunId, newMiktar);
+            });
+
+            // Quantity input change
+            $('.miktar-input').change(function() {
+                var urunId = $(this).data('urun-id');
+                var miktar = Math.max(1, parseInt($(this).val()) || 1);
+                $(this).val(miktar);
+                updateMiktar(urunId, miktar);
+            });
+
+            // Remove item
+            $('.remove-item').click(function() {
+                var urunId = $(this).data('urun-id');
+                if (confirm('Bu ürünü sepetten çıkarmak istediğinizden emin misiniz?')) {
+                    $.post('@Url.Action("RemoveItem", "Cart")', { urunId: urunId }, function(data) {
+                        if (data.success) {
+                            $('#cart-item-' + urunId).fadeOut(300, function() {
+                                $(this).remove();
+                                updateTotals(data);
+                                if (data.cartCount === 0) location.reload();
+                            });
+                        }
+                    });
+                }
+            });
+
+            function updateMiktar(urunId, miktar) {
+                $.post('@Url.Action("UpdateMiktar", "Cart")', { urunId: urunId, miktar: miktar }, function(data) {
+                    if (data.success) {
+                        $('input[data-urun-id="' + urunId + '"]').val(miktar);
+                        var birimFiyat = parseFloat($('#cart-item-' + urunId + ' .text-muted').text().replace(/[^\d.,]/g, '').replace(',', '.'));
+                        var itemTotal = (birimFiyat * miktar).toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' });
+                        $('#cart-item-' + urunId + ' .item-total').text(itemTotal);
+                        updateTotals(data);
+                    }
+                });
+            }
+
+            function updateTotals(data) {
+                $('#cart-count').text(data.cartCount);
+                $('#total-items').text(data.cartCount);
+                $('#subtotal').text(data.total.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' }));
+                recalculateTotal();
+            }
+        });
+
+        // Coupon functions
+        async function applyCoupon() {
+            const code = document.getElementById('couponCode').value.trim();
+            if (!code) {
+                showMessage('couponMessage', 'Lütfen kupon kodu girin!', 'danger');
+                return;
+            }
+            try {
+                const response = await fetch('@Url.Action("ApplyCoupon", "Cart")', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ kuponKodu: code })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    document.getElementById('discount').textContent = `-${result.indirim.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}`;
+                    document.getElementById('discountRow').style.display = 'flex';
+                    document.getElementById('couponCodeText').textContent = code.toUpperCase();
+                    document.getElementById('appliedCoupon').style.display = 'flex';
+                    document.getElementById('couponCode').value = '';
+                    showMessage('couponMessage', result.message, 'success');
+                    recalculateTotal();
+                } else {
+                    showMessage('couponMessage', result.message, 'danger');
+                }
+            } catch (error) {
+                showMessage('couponMessage', 'Bir hata oluştu!', 'danger');
+            }
+        }
+
+        async function removeCoupon() {
+            try {
+                const response = await fetch('@Url.Action("RemoveCoupon", "Cart")', { method: 'POST' });
+                const result = await response.json();
+                if (result.success) {
+                    document.getElementById('discountRow').style.display = 'none';
+                    document.getElementById('appliedCoupon').style.display = 'none';
+                    showMessage('couponMessage', result.message, 'success');
+                    recalculateTotal();
+                }
+            } catch (error) {
+                console.error('Kupon kaldırma hatası:', error);
+            }
+        }
+
+        // Shipping functions
+        async function calculateShipping() {
+            const city = document.getElementById('shippingCity').value;
+            if (!city) return;
+            try {
+                const response = await fetch('@Url.Action("CalculateShipping", "Cart")', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ il: city })
+                });
+                const result = await response.json();
+                if (result.success) displayShippingOptions(result.secenekler);
+            } catch (error) {
+                console.error('Kargo hesaplama hatası:', error);
+            }
+        }
+
+        function displayShippingOptions(options) {
+            const container = document.getElementById('shippingOptions');
+            if (!options || options.length === 0) {
+                container.innerHTML = '<p class="text-muted small">Kargo seçeneği bulunamadı.</p>';
+                return;
+            }
+            container.innerHTML = options.map(opt => `
+                <div class="form-check p-3 rounded-3 mb-2" style="background: var(--bg-glass);">
+                    <input class="form-check-input" type="radio" name="shipping" id="shipping${opt.id}" 
+                           value="${opt.id}" onchange="selectShipping(${opt.id}, ${opt.ucret})">
+                    <label class="form-check-label w-100" for="shipping${opt.id}">
+                        <div class="d-flex justify-content-between">
+                            <strong>${opt.firmaAdi}</strong>
+                            <span class="${opt.ucretsizKargo ? 'text-success fw-bold' : ''}">${opt.ucretsizKargo ? 'Ücretsiz' : opt.ucret.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span>
+                        </div>
+                        <small class="text-muted">${opt.aciklama}</small>
+                    </label>
+                </div>
+            `).join('');
+        }
+
+        async function selectShipping(kargoFirmaId, kargoUcreti) {
+            try {
+                const response = await fetch('@Url.Action("SelectShipping", "Cart")', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ kargoFirmaId, kargoUcreti })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    document.getElementById('shipping').textContent = result.kargoUcreti === 0 ? 'Ücretsiz' : result.kargoUcreti.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' });
+                    recalculateTotal();
+                }
+            } catch (error) {
+                console.error('Kargo seçimi hatası:', error);
+            }
+        }
+
+        // Save cart functions
+        async function saveCart() {
+            const ad = document.getElementById('savedCartName').value.trim();
+            const aciklama = document.getElementById('savedCartDesc').value.trim();
+            if (!ad) { alert('Lütfen sepet adı girin!'); return; }
+            try {
+                const response = await fetch('@Url.Action("SaveCart", "Cart")', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ad, aciklama })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    $('#saveCartModal').modal('hide');
+                    showToast('Başarılı!', result.message, 'success');
+                    document.getElementById('savedCartName').value = '';
+                    document.getElementById('savedCartDesc').value = '';
+                } else {
+                    alert(result.message);
+                }
+            } catch (error) {
+                alert('Bir hata oluştu!');
+            }
+        }
+
+        async function showSavedCarts() {
+            try {
+                const response = await fetch('@Url.Action("GetSavedCarts", "Cart")');
+                const result = await response.json();
+                if (result.success && result.sepetler.length > 0) {
+                    const html = result.sepetler.map(s => `
+                        <div class="card mb-2 border-0" style="background: var(--bg-glass);">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="mb-1">${s.ad}</h6>
+                                        <p class="text-muted small mb-2">${s.aciklama || 'Açıklama yok'}</p>
+                                        <span class="badge bg-primary">${s.urunSayisi} ürün</span>
+                                        <span class="badge bg-success">${s.toplam.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' })}</span>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <button class="btn btn-primary btn-sm" onclick="loadSavedCart(${s.id})">
+                                            <i class="fas fa-download"></i>
+                                        </button>
+                                        <button class="btn btn-danger btn-sm" onclick="deleteSavedCart(${s.id})">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                    document.getElementById('savedCartsList').innerHTML = html;
+                    $('#savedCartsModal').modal('show');
+                } else {
+                    alert('Kayıtlı sepet bulunamadı!');
+                }
+            } catch (error) {
+                alert('Bir hata oluştu!');
+            }
+        }
+
+        async function loadSavedCart(sepetId) {
+            if (!confirm('Mevcut sepetiniz silinecek. Devam etmek istiyor musunuz?')) return;
+            try {
+                const response = await fetch('@Url.Action("LoadSavedCart", "Cart")', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sepetId })
+                });
+                const result = await response.json();
+                if (result.success) location.reload();
+                else alert(result.message);
+            } catch (error) {
+                alert('Bir hata oluştu!');
+            }
+        }
+
+        async function deleteSavedCart(sepetId) {
+            if (!confirm('Bu sepeti silmek istediğinizden emin misiniz?')) return;
+            try {
+                const response = await fetch('@Url.Action("DeleteSavedCart", "Cart")', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sepetId })
+                });
+                const result = await response.json();
+                if (result.success) showSavedCarts();
+                else alert(result.message);
+            } catch (error) {
+                alert('Bir hata oluştu!');
+            }
+        }
+
+        // Helper functions
+        function recalculateTotal() {
+            const subtotal = parseFloat(document.getElementById('subtotal').textContent.replace(/[^\d,]/g, '').replace(',', '.'));
+            const discountText = document.getElementById('discount').textContent.replace(/[^\d,]/g, '').replace(',', '.');
+            const discount = discountText ? parseFloat(discountText) : 0;
+            const shippingText = document.getElementById('shipping').textContent;
+            const shipping = shippingText === 'Ücretsiz' || shippingText === 'Hesaplanacak' ? 0 : parseFloat(shippingText.replace(/[^\d,]/g, '').replace(',', '.'));
+            const total = subtotal - discount + shipping;
+            document.getElementById('total-amount').textContent = total.toLocaleString('tr-TR', { style: 'currency', currency: 'TRY' });
+        }
+
+        function showMessage(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.className = `small alert alert-${type}`;
+            element.textContent = message;
+            setTimeout(() => { element.className = 'small'; element.textContent = ''; }, 3000);
+        }
+    </script>
+}

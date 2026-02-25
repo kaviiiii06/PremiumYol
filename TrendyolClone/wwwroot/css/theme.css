@@ -1,0 +1,628 @@
+/* ========================================
+   PREMIUMYOL - PROFESSIONAL THEME
+   Dark/Light Mode Support
+   ======================================== */
+
+:root {
+    /* Light Theme Colors */
+    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8f9fa;
+    --bg-tertiary: #e9ecef;
+    
+    --text-primary: #212529;
+    --text-secondary: #6c757d;
+    --text-muted: #adb5bd;
+    
+    --border-color: #dee2e6;
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.08);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.12);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.15);
+    
+    --navbar-bg: #ffffff;
+    --card-bg: #ffffff;
+    --footer-bg: #f8f9fa;
+    
+    --transition-speed: 0.3s;
+}
+
+[data-theme="dark"] {
+    /* Dark Theme Colors */
+    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    
+    --bg-primary: #1a1a2e;
+    --bg-secondary: #16213e;
+    --bg-tertiary: #0f3460;
+    
+    --text-primary: #e9ecef;
+    --text-secondary: #adb5bd;
+    --text-muted: #6c757d;
+    
+    --border-color: #2d3748;
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+    
+    --navbar-bg: #1a1a2e;
+    --card-bg: #16213e;
+    --footer-bg: #0f1419;
+}
+
+/* ========================================
+   GLOBAL STYLES
+   ======================================== */
+
+* {
+    transition: background-color var(--transition-speed) ease,
+                color var(--transition-speed) ease,
+                border-color var(--transition-speed) ease;
+}
+
+body {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    padding-bottom: 0 !important;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+body > .container {
+    flex: 1;
+}
+
+/* ========================================
+   NAVBAR
+   ======================================== */
+
+.navbar {
+    background-color: var(--navbar-bg) !important;
+    box-shadow: var(--shadow-md);
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+    font-weight: 700;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.nav-link {
+    color: var(--text-primary) !important;
+    font-weight: 500;
+}
+
+.nav-link:hover {
+    color: #667eea !important;
+}
+
+#theme-toggle {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 50%;
+    color: var(--text-primary);
+}
+
+#theme-toggle:hover {
+    background-color: var(--bg-tertiary);
+}
+
+/* ========================================
+   SEARCH BAR
+   ======================================== */
+
+.search-wrapper {
+    background-color: var(--bg-secondary);
+    border: 2px solid var(--border-color);
+    border-radius: 50px;
+}
+
+.search-wrapper:focus-within {
+    border-color: #667eea;
+    background-color: var(--bg-primary);
+}
+
+.search-input {
+    background: transparent;
+    color: var(--text-primary);
+    border: none;
+}
+
+.search-input::placeholder {
+    color: var(--text-muted);
+}
+
+.search-button {
+    background: var(--primary-gradient);
+    border: none;
+    border-radius: 50%;
+    color: white;
+}
+
+/* ========================================
+   CARDS
+   ======================================== */
+
+.card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 15px;
+    box-shadow: var(--shadow-sm);
+}
+
+.card:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-lg);
+}
+
+.card-title {
+    color: var(--text-primary);
+}
+
+.card-text {
+    color: var(--text-secondary);
+}
+
+.card-header {
+    background-color: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
+
+.card-body {
+    background-color: var(--card-bg);
+    color: var(--text-primary);
+}
+
+.card-footer {
+    background-color: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
+
+/* ========================================
+   BUTTONS
+   ======================================== */
+
+.btn-primary {
+    background: var(--primary-gradient);
+    border: none;
+    border-radius: 25px;
+    color: white;
+}
+
+.btn-outline-primary {
+    border: 2px solid #667eea;
+    color: #667eea;
+    border-radius: 25px;
+}
+
+.btn-outline-primary:hover {
+    background: var(--primary-gradient);
+    color: white;
+}
+
+/* ========================================
+   FORMS
+   ======================================== */
+
+.form-control,
+.form-select {
+    background-color: var(--bg-secondary);
+    border: 2px solid var(--border-color);
+    color: var(--text-primary);
+    border-radius: 10px;
+}
+
+.form-control:focus,
+.form-select:focus {
+    background-color: var(--bg-primary);
+    border-color: #667eea;
+    color: var(--text-primary);
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+.form-control::placeholder {
+    color: var(--text-muted);
+}
+
+.form-label {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+/* ========================================
+   TABLES
+   ======================================== */
+
+.table {
+    color: var(--text-primary);
+    background-color: var(--card-bg);
+}
+
+.table thead {
+    background: var(--primary-gradient);
+    color: white;
+}
+
+.table tbody tr {
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--card-bg);
+}
+
+.table tbody tr:hover {
+    background-color: var(--bg-tertiary);
+}
+
+/* ========================================
+   DROPDOWN
+   ======================================== */
+
+.dropdown-menu {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 15px;
+    box-shadow: var(--shadow-lg);
+}
+
+.dropdown-item {
+    color: var(--text-primary);
+    border-radius: 10px;
+}
+
+.dropdown-item:hover {
+    background-color: var(--bg-tertiary);
+    color: #667eea;
+}
+
+.dropdown-divider {
+    border-color: var(--border-color);
+}
+
+/* ========================================
+   MODAL
+   ======================================== */
+
+.modal-content {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+}
+
+.modal-header {
+    border-bottom: 1px solid var(--border-color);
+    background: var(--primary-gradient);
+    color: white;
+    border-radius: 20px 20px 0 0;
+}
+
+.modal-body {
+    background-color: var(--card-bg);
+    color: var(--text-primary);
+}
+
+.modal-footer {
+    border-top: 1px solid var(--border-color);
+    background-color: var(--card-bg);
+}
+
+.modal-title {
+    color: white;
+}
+
+[data-theme="dark"] .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+/* ========================================
+   ALERTS
+   ======================================== */
+
+.alert {
+    border-radius: 15px;
+    border: none;
+    box-shadow: var(--shadow-sm);
+}
+
+.alert-success {
+    background: linear-gradient(135deg, rgba(79, 172, 254, 0.2) 0%, rgba(0, 242, 254, 0.2) 100%);
+    color: var(--text-primary);
+    border-left: 4px solid #4facfe;
+}
+
+.alert-danger {
+    background: linear-gradient(135deg, rgba(245, 87, 108, 0.2) 0%, rgba(240, 147, 251, 0.2) 100%);
+    color: var(--text-primary);
+    border-left: 4px solid #f5576c;
+}
+
+.alert-warning {
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.2) 0%, rgba(255, 152, 0, 0.2) 100%);
+    color: var(--text-primary);
+    border-left: 4px solid #ffc107;
+}
+
+/* ========================================
+   BADGES
+   ======================================== */
+
+.badge {
+    border-radius: 20px;
+    padding: 0.4rem 0.8rem;
+    font-weight: 600;
+}
+
+.badge.bg-danger {
+    background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%) !important;
+}
+
+.badge.bg-success {
+    background: var(--success-gradient) !important;
+}
+
+.badge.bg-warning {
+    background: linear-gradient(135deg, #ffd93d 0%, #ff6b6b 100%) !important;
+}
+
+.badge.bg-info {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%) !important;
+}
+
+/* ========================================
+   FOOTER
+   ======================================== */
+
+.footer-modern {
+    background-color: var(--footer-bg);
+    border-top: 2px solid var(--border-color);
+    margin-top: 3rem;
+    color: var(--text-secondary);
+}
+
+.footer-link {
+    color: var(--text-secondary);
+    text-decoration: none;
+}
+
+.footer-link:hover {
+    color: #667eea;
+}
+
+/* ========================================
+   TEXT COLORS
+   ======================================== */
+
+h1, h2, h3, h4, h5, h6 {
+    color: var(--text-primary);
+}
+
+p, span, div, li, td, th, label {
+    color: var(--text-primary);
+}
+
+.text-muted {
+    color: var(--text-muted) !important;
+}
+
+small {
+    color: var(--text-secondary);
+}
+
+a:not(.btn):not(.nav-link):not(.dropdown-item) {
+    color: #667eea;
+}
+
+a:not(.btn):not(.nav-link):not(.dropdown-item):hover {
+    color: #764ba2;
+}
+
+/* ========================================
+   LIST GROUP
+   ======================================== */
+
+.list-group-item {
+    background-color: var(--card-bg);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+}
+
+/* ========================================
+   PAGINATION
+   ======================================== */
+
+.page-link {
+    background-color: var(--card-bg);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+}
+
+.page-link:hover {
+    background-color: var(--bg-tertiary);
+    color: #667eea;
+}
+
+.page-item.active .page-link {
+    background: var(--primary-gradient);
+    border-color: transparent;
+}
+
+/* ========================================
+   BREADCRUMB
+   ======================================== */
+
+.breadcrumb {
+    background-color: var(--bg-secondary);
+}
+
+.breadcrumb-item,
+.breadcrumb-item a {
+    color: var(--text-secondary);
+}
+
+.breadcrumb-item.active {
+    color: var(--text-primary);
+}
+
+/* ========================================
+   NAV TABS
+   ======================================== */
+
+.nav-tabs {
+    border-bottom-color: var(--border-color);
+}
+
+.nav-tabs .nav-link {
+    color: var(--text-secondary);
+    background-color: transparent;
+}
+
+.nav-tabs .nav-link:hover {
+    color: var(--text-primary);
+    border-color: var(--border-color);
+}
+
+.nav-tabs .nav-link.active {
+    color: var(--text-primary);
+    background-color: var(--card-bg);
+    border-color: var(--border-color) var(--border-color) transparent;
+}
+
+/* ========================================
+   ACCORDION
+   ======================================== */
+
+.accordion-item {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+}
+
+.accordion-button {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+.accordion-button:not(.collapsed) {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.accordion-body {
+    background-color: var(--card-bg);
+    color: var(--text-primary);
+}
+
+/* ========================================
+   SCROLLBAR
+   ======================================== */
+
+::-webkit-scrollbar {
+    width: 12px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary-gradient);
+    border-radius: 10px;
+}
+
+/* ========================================
+   BOOTSTRAP OVERRIDES FOR DARK MODE
+   ======================================== */
+
+[data-theme="dark"] .bg-white {
+    background-color: var(--card-bg) !important;
+}
+
+[data-theme="dark"] .bg-light {
+    background-color: var(--bg-secondary) !important;
+}
+
+[data-theme="dark"] .text-dark {
+    color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .border {
+    border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .border-bottom {
+    border-bottom-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] .border-top {
+    border-top-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] input[type="text"],
+[data-theme="dark"] input[type="email"],
+[data-theme="dark"] input[type="password"],
+[data-theme="dark"] input[type="tel"],
+[data-theme="dark"] input[type="date"],
+[data-theme="dark"] input[type="number"],
+[data-theme="dark"] textarea {
+    background-color: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] input[type="text"]:focus,
+[data-theme="dark"] input[type="email"]:focus,
+[data-theme="dark"] input[type="password"]:focus,
+[data-theme="dark"] input[type="tel"]:focus,
+[data-theme="dark"] input[type="date"]:focus,
+[data-theme="dark"] input[type="number"]:focus,
+[data-theme="dark"] textarea:focus {
+    background-color: var(--bg-tertiary) !important;
+    color: var(--text-primary) !important;
+    border-color: #667eea !important;
+}
+
+[data-theme="dark"] select {
+    background-color: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border-color) !important;
+}
+
+[data-theme="dark"] select:focus {
+    background-color: var(--bg-tertiary) !important;
+    color: var(--text-primary) !important;
+    border-color: #667eea !important;
+}
+
+[data-theme="dark"] .table-responsive {
+    background-color: var(--card-bg);
+}
+
+[data-theme="dark"] hr {
+    border-color: var(--border-color) !important;
+    opacity: 0.3;
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+
+@media (max-width: 768px) {
+    .navbar {
+        padding: 0.5rem 0;
+    }
+    
+    .card {
+        margin-bottom: 1rem;
+    }
+}

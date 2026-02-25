@@ -1,0 +1,175 @@
+@model TrendyolClone.Models.DTOs.AramaSonucDto
+@{
+    ViewData["Title"] = $"Arama: {Model.AramaTerimi}";
+}
+
+<div class="container mt-4">
+    <!-- Arama Başlığı -->
+    <div class="mb-4">
+        <h3>"<span class="text-primary">@Model.AramaTerimi</span>" için arama sonuçları</h3>
+        <p class="text-muted">@Model.ToplamSonuc sonuç bulundu</p>
+    </div>
+
+    @if (Model.ToplamSonuc > 0)
+    {
+        <div class="row">
+            <!-- Filtreler -->
+            <div class="col-md-3">
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="fas fa-filter me-2"></i>Filtreler</h6>
+                    </div>
+                    <div class="card-body">
+                        @if (Model.Filtreler.Kategoriler?.Any() == true)
+                        {
+                            <div class="mb-3">
+                                <h6 class="fw-bold">Kategoriler</h6>
+                                @foreach (var kategori in Model.Filtreler.Kategoriler)
+                                {
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="cat_@kategori.Id">
+                                        <label class="form-check-label" for="cat_@kategori.Id">
+                                            @kategori.Ad <span class="text-muted">(@kategori.UrunSayisi)</span>
+                                        </label>
+                                    </div>
+                                }
+                            </div>
+                        }
+
+                        @if (Model.Filtreler.Markalar?.Any() == true)
+                        {
+                            <div class="mb-3">
+                                <h6 class="fw-bold">Markalar</h6>
+                                @foreach (var marka in Model.Filtreler.Markalar)
+                                {
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="brand_@marka.Id">
+                                        <label class="form-check-label" for="brand_@marka.Id">
+                                            @marka.Ad <span class="text-muted">(@marka.UrunSayisi)</span>
+                                        </label>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sonuçlar -->
+            <div class="col-md-9">
+                <div class="row">
+                    @foreach (var urun in Model.Urunler)
+                    {
+                        <div class="col-lg-4 col-md-6 mb-4">
+                            <div class="card h-100 product-card">
+                                <img src="@(string.IsNullOrEmpty(urun.ResimUrl) ? "/images/no-image.jpg" : urun.ResimUrl)" 
+                                     class="card-img-top" alt="@urun.Ad" style="height: 200px; object-fit: cover;">
+                                
+                                <div class="card-body d-flex flex-column">
+                                    @if (!string.IsNullOrEmpty(urun.MarkaAdi))
+                                    {
+                                        <p class="text-muted small mb-1">@urun.MarkaAdi</p>
+                                    }
+                                    <h6 class="card-title">@urun.Ad</h6>
+                                    <p class="card-text text-muted small flex-grow-1">
+                                        @(urun.Aciklama?.Length > 80 ? urun.Aciklama.Substring(0, 80) + "..." : urun.Aciklama)
+                                    </p>
+                                    
+                                    @if (urun.Puan > 0)
+                                    {
+                                        <div class="mb-2">
+                                            @for (int i = 1; i <= 5; i++)
+                                            {
+                                                <i class="fas fa-star @(i <= urun.Puan ? "text-warning" : "text-muted")"></i>
+                                            }
+                                            <small class="text-muted">(@urun.YorumSayisi)</small>
+                                        </div>
+                                    }
+
+                                    <div class="mt-auto">
+                                        <div class="mb-2">
+                                            <span class="fw-bold fs-5">@urun.Fiyat.ToString("C")</span>
+                                        </div>
+                                        
+                                        <div class="d-flex gap-2">
+                                            <a asp-controller="Product" asp-action="Details" asp-route-id="@urun.Id" 
+                                               class="btn btn-outline-primary btn-sm flex-grow-1"
+                                               onclick="trackClick('@Model.AramaTerimi', @urun.Id)">
+                                                <i class="fas fa-eye me-1"></i>Detay
+                                            </a>
+                                            @if (urun.Stok > 0)
+                                            {
+                                                <button class="btn btn-primary btn-sm add-to-cart" data-product-id="@urun.Id">
+                                                    <i class="fas fa-cart-plus"></i>
+                                                </button>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- Sayfalama -->
+                @if (Model.ToplamSayfa > 1)
+                {
+                    <nav aria-label="Sayfa navigasyonu">
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item @(Model.Sayfa == 1 ? "disabled" : "")">
+                                <a class="page-link" href="?q=@Model.AramaTerimi&page=@(Model.Sayfa - 1)">Önceki</a>
+                            </li>
+                            
+                            @for (int i = 1; i <= Model.ToplamSayfa; i++)
+                            {
+                                <li class="page-item @(i == Model.Sayfa ? "active" : "")">
+                                    <a class="page-link" href="?q=@Model.AramaTerimi&page=@i">@i</a>
+                                </li>
+                            }
+                            
+                            <li class="page-item @(Model.Sayfa == Model.ToplamSayfa ? "disabled" : "")">
+                                <a class="page-link" href="?q=@Model.AramaTerimi&page=@(Model.Sayfa + 1)">Sonraki</a>
+                            </li>
+                        </ul>
+                    </nav>
+                }
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-5">
+            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+            <h3>Sonuç bulunamadı</h3>
+            <p class="text-muted">Farklı anahtar kelimeler deneyebilirsiniz.</p>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        function trackClick(term, productId) {
+            $.post('@Url.Action("TrackClick", "Search")', { term: term, productId: productId });
+        }
+
+        $('.add-to-cart').click(function() {
+            var productId = $(this).data('product-id');
+            $.post('@Url.Action("AddToCart", "Product")', { productId: productId }, function(data) {
+                if (data.success) {
+                    $('#cart-count').text(data.cartCount);
+                    alert('Ürün sepete eklendi!');
+                }
+            });
+        });
+    </script>
+
+    <style>
+        .product-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+    </style>
+}

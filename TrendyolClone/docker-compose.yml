@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+      - "8443:443"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=https://+:443;http://+:80
+      - ConnectionStrings__DefaultConnection=Data Source=/app/data/PremiumYol.db
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/Logs
+    restart: unless-stopped
+    networks:
+      - premiumyol-network
+
+networks:
+  premiumyol-network:
+    driver: bridge

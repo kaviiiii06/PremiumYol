@@ -1,0 +1,320 @@
+﻿@model List<TrendyolClone.Models.Siparis>
+@{
+    ViewData["Title"] = "Siparişlerim";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3><i class="fas fa-box me-2"></i>Siparişlerim</h3>
+                <a asp-action="Profile" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left me-2"></i>Hesabıma Dön
+                </a>
+            </div>
+
+            @if (Model != null && Model.Any())
+            {
+                @foreach (var Siparis in Model)
+                {
+                    <div class="card mb-3">
+                        <div class="card-header bg-white">
+                            <div class="row align-items-center">
+                                <div class="col-md-3">
+                                    <small class="text-muted">Sipariş No</small>
+                                    <h6 class="mb-0">#@Siparis.Id</h6>
+                                </div>
+                                <div class="col-md-3">
+                                    <small class="text-muted">Tarih</small>
+                                    <h6 class="mb-0">@Siparis.SiparisTarihi.ToString("dd MMM yyyy")</h6>
+                                </div>
+                                <div class="col-md-3">
+                                    <small class="text-muted">Tutar</small>
+                                    <h6 class="mb-0 text-primary">@Siparis.ToplamTutar.ToString("C")</h6>
+                                </div>
+                                <div class="col-md-3">
+                                    <small class="text-muted">Durum</small>
+                                    <h6 class="mb-0">
+                                        @switch (Siparis.Durum)
+                                        {
+                                            case TrendyolClone.Models.SiparisDurumu.Beklemede:
+                                                <span class="badge bg-warning">Beklemede</span>
+                                                break;
+                                            case TrendyolClone.Models.SiparisDurumu.Onaylandi:
+                                                <span class="badge bg-info">Onaylandı</span>
+                                                break;
+                                            case TrendyolClone.Models.SiparisDurumu.Kargoda:
+                                                <span class="badge bg-primary">Kargoda</span>
+                                                break;
+                                            case TrendyolClone.Models.SiparisDurumu.TeslimEdildi:
+                                                <span class="badge bg-success">Teslim Edildi</span>
+                                                break;
+                                            case TrendyolClone.Models.SiparisDurumu.IptalEdildi:
+                                                <span class="badge bg-danger">İptal Edildi</span>
+                                                break;
+                                        }
+                                    </h6>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <p class="mb-2"><i class="fas fa-map-marker-alt me-2 text-primary"></i><strong>Teslimat Adresi:</strong></p>
+                                    <p class="text-muted ms-4">@Siparis.TeslimatAdresi</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="mb-2"><i class="fas fa-credit-card me-2 text-success"></i><strong>Ödeme Yöntemi:</strong></p>
+                                    <p class="text-muted ms-4">
+                                        @if (!string.IsNullOrEmpty(Siparis.OdemeYontemi))
+                                        {
+                                            <span class="badge bg-info">@Siparis.OdemeYontemi</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">Belirtilmemiş</span>
+                                        }
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <!-- Sipariş Kalemleri -->
+                            @if (Siparis.SiparisKalemleri != null && Siparis.SiparisKalemleri.Any())
+                            {
+                                <div class="mb-3">
+                                    <strong class="d-block mb-2">Sipariş Ürünleri:</strong>
+                                    @foreach (var item in Siparis.SiparisKalemleri)
+                                    {
+                                        <div class="d-flex align-items-center mb-2 p-2 bg-light rounded">
+                                            @if (item.Urun != null)
+                                            {
+                                                <img src="@item.Urun.ResimUrl" alt="@item.Urun.Ad" class="me-3" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">
+                                                <div class="flex-grow-1">
+                                                    <small class="d-block fw-bold">@item.Urun.Ad</small>
+                                                    <small class="text-muted">Adet: @item.Miktar x @item.BirimFiyat.ToString("C")</small>
+                                                    @if (Siparis.Durum == TrendyolClone.Models.SiparisDurumu.TeslimEdildi)
+                                                    {
+                                                        var reviewedProducts = ViewBag.ReviewedProducts as List<int>;
+                                                        var isReviewed = reviewedProducts != null && reviewedProducts.Contains(item.UrunId);
+                                                        
+                                                        <div class="mt-1">
+                                                            @if (isReviewed)
+                                                            {
+                                                                <span class="badge bg-success">
+                                                                    <i class="fas fa-check me-1"></i>Değerlendirildi
+                                                                </span>
+                                                            }
+                                                            else
+                                                            {
+                                                                <button class="btn btn-sm btn-outline-warning Yorum-btn" 
+                                                                        data-Urun-id="@item.UrunId" 
+                                                                        data-Urun-name="@item.Urun.Ad"
+                                                                        data-Siparis-id="@Siparis.Id">
+                                                                    <i class="fas fa-star me-1"></i>Değerlendir
+                                                                </button>
+                                                            }
+                                                        </div>
+                                                    }
+                                                </div>
+                                                <strong class="text-primary">@((item.Miktar * item.BirimFiyat).ToString("C"))</strong>
+                                            }
+                                            else
+                                            {
+                                                <div class="flex-grow-1">
+                                                    <small class="d-block fw-bold">Ürün</small>
+                                                    <small class="text-muted">Adet: @item.Miktar x @item.BirimFiyat.ToString("C")</small>
+                                                </div>
+                                                <strong class="text-primary">@((item.Miktar * item.BirimFiyat).ToString("C"))</strong>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                            }
+                            
+                            <div class="d-flex gap-2">
+                                @if (Siparis.Durum == TrendyolClone.Models.SiparisDurumu.Onaylandi || Siparis.Durum == TrendyolClone.Models.SiparisDurumu.Kargoda)
+                                {
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-truck me-1"></i>Kargoya Verildi
+                                    </span>
+                                }
+                                @if (Siparis.Durum == TrendyolClone.Models.SiparisDurumu.TeslimEdildi)
+                                {
+                                    <button class="btn btn-sm btn-outline-success">
+                                        <i class="fas fa-redo me-1"></i>Tekrar Sipariş Ver
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="card text-center py-5">
+                    <div class="card-body">
+                        <i class="fas fa-box-open fa-4x text-muted mb-3"></i>
+                        <h4>Henüz siparişiniz yok</h4>
+                        <p class="text-muted">Alışverişe başlamak için ürünleri keşfedin!</p>
+                        <a asp-controller="Urun" asp-action="Index" class="btn btn-primary">
+                            <i class="fas fa-shopping-bag me-2"></i>Alışverişe Başla
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Değerlendirme Modal -->
+<div class="modal fade" id="reviewModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Ürün Değerlendirmesi</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="reviewUrunId">
+                <input type="hidden" id="reviewOrderId">
+                
+                <div class="mb-3">
+                    <label class="form-label fw-bold" id="reviewProductName"></label>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Puanınız</label>
+                    <div class="rating-stars">
+                        <i class="fas fa-star star" data-rating="1"></i>
+                        <i class="fas fa-star star" data-rating="2"></i>
+                        <i class="fas fa-star star" data-rating="3"></i>
+                        <i class="fas fa-star star" data-rating="4"></i>
+                        <i class="fas fa-star star" data-rating="5"></i>
+                    </div>
+                    <input type="hidden" id="reviewRating" value="0">
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Yorumunuz</label>
+                    <textarea class="form-control" id="reviewComment" rows="4" placeholder="Ürün hakkındaki düşüncelerinizi paylaşın..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <button type="button" class="btn btn-primary" id="submitReview">
+                    <i class="fas fa-paper-plane me-1"></i>Gönder
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <style>
+        .Puan-stars {
+            font-size: 2rem;
+            cursor: pointer;
+        }
+        .Puan-stars .star {
+            color: #ddd;
+            transition: color 0.2s;
+        }
+        .Puan-stars .star.active,
+        .Puan-stars .star:hover {
+            color: #ffc107;
+        }
+    </style>
+    
+    <script>
+        $(document).ready(function() {
+            let selectedRating = 0;
+            
+            // Değerlendirme butonuna tıklandığında
+            $('.Yorum-btn').click(function() {
+                const UrunId = $(this).data('Urun-id');
+                const productName = $(this).data('Urun-name');
+                const orderId = $(this).data('Siparis-id');
+                
+                $('#reviewUrunId').val(UrunId);
+                $('#reviewOrderId').val(orderId);
+                $('#reviewProductName').text(productName);
+                $('#reviewRating').val(0);
+                $('#reviewComment').val('');
+                selectedRating = 0;
+                
+                // Yıldızları sıfırla
+                $('.star').removeClass('active');
+                
+                $('#reviewModal').modal('show');
+            });
+            
+            // Yıldız seçimi
+            $('.star').hover(
+                function() {
+                    const rating = $(this).data('rating');
+                    $('.star').each(function() {
+                        if ($(this).data('rating') <= rating) {
+                            $(this).addClass('active');
+                        } else {
+                            $(this).removeClass('active');
+                        }
+                    });
+                },
+                function() {
+                    $('.star').removeClass('active');
+                    if (selectedRating > 0) {
+                        $('.star').each(function() {
+                            if ($(this).data('rating') <= selectedRating) {
+                                $(this).addClass('active');
+                            }
+                        });
+                    }
+                }
+            );
+            
+            $('.star').click(function() {
+                selectedRating = $(this).data('rating');
+                $('#reviewRating').val(selectedRating);
+                
+                $('.star').removeClass('active');
+                $('.star').each(function() {
+                    if ($(this).data('rating') <= selectedRating) {
+                        $(this).addClass('active');
+                    }
+                });
+            });
+            
+            // Değerlendirme gönder
+            $('#submitReview').click(function() {
+                const UrunId = $('#reviewUrunId').val();
+                const rating = $('#reviewRating').val();
+                const comment = $('#reviewComment').val().trim();
+                
+                if (rating == 0) {
+                    alert('Lütfen bir puan seçin!');
+                    return;
+                }
+                
+                if (!comment) {
+                    alert('Lütfen bir yorum yazın!');
+                    return;
+                }
+                
+                $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i>Gönderiliyor...');
+                
+                $.post('@Url.Action("AddReview", "Urun")', {
+                    UrunId: UrunId,
+                    rating: rating,
+                    comment: comment
+                }, function(response) {
+                    $('#reviewModal').modal('hide');
+                    alert('Değerlendirmeniz başarıyla eklendi!');
+                    location.reload();
+                }).fail(function() {
+                    alert('Bir hata oluştu!');
+                    $('#submitReview').prop('disabled', false).html('<i class="fas fa-paper-plane me-1"></i>Gönder');
+                });
+            });
+        });
+    </script>
+}

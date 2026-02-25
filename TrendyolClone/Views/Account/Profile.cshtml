@@ -1,0 +1,381 @@
+﻿@model TrendyolClone.Models.Kullanici
+@{
+    ViewData["Title"] = "Profilim";
+}
+
+<div class="container mt-4 mb-5">
+    <div class="row">
+        <!-- Sol Menü -->
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <div class="position-relative d-inline-block">
+                            @if (!string.IsNullOrEmpty(Model.ProfilFotoUrl))
+                            {
+                                <img src="@Model.ProfilFotoUrl" alt="Profil Fotoğrafı" class="rounded-circle" style="width: 120px; height: 120px; object-fit: cover;" id="profilePhoto">
+                            }
+                            else
+                            {
+                                <i class="fas fa-user-circle fa-5x text-primary" id="profileIcon"></i>
+                            }
+                            <span class="position-absolute bottom-0 end-0 badge rounded-pill bg-success">
+                                <i class="fas fa-check"></i>
+                            </span>
+                        </div>
+                        <div class="mt-2">
+                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="$('#photoUpload').click()">
+                                <i class="fas fa-camera me-1"></i>Fotoğraf Yükle
+                            </button>
+                            @if (!string.IsNullOrEmpty(Model.ProfilFotoUrl))
+                            {
+                                <button type="button" class="btn btn-sm btn-outline-danger mt-1" onclick="deleteProfilePhoto()">
+                                    <i class="fas fa-trash me-1"></i>Sil
+                                </button>
+                            }
+                            <input type="file" id="photoUpload" accept="image/*" style="display: none;" onchange="uploadProfilePhoto(this)">
+                        </div>
+                    </div>
+                    <h5 class="mb-1">@Model.Ad @Model.Soyad</h5>
+                    <p class="text-muted small mb-2">@Model.Email</p>
+                    @if (Model.Rol != null)
+                    {
+                        var badgeClass = Model.Rol.Ad switch
+                        {
+                            "Müşteri" => "bg-primary",
+                            "Premium Müşteri" => "bg-warning text-dark",
+                            "VIP Müşteri" => "bg-danger",
+                            "Satış Temsilcisi" => "bg-success",
+                            "Moderatör" => "bg-info",
+                            _ => "bg-secondary"
+                        };
+                        var roleIcon = Model.Rol.Ad switch
+                        {
+                            "Müşteri" => "fas fa-user",
+                            "Premium Müşteri" => "fas fa-star",
+                            "VIP Müşteri" => "fas fa-crown",
+                            "Satış Temsilcisi" => "fas fa-handshake",
+                            "Moderatör" => "fas fa-shield-alt",
+                            _ => "fas fa-user-tag"
+                        };
+                        <span class="badge @badgeClass">
+                            <i class="@roleIcon me-1"></i>@Model.Rol.Ad
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">
+                            <i class="fas fa-user-tag me-1"></i>Rol Atanmamış
+                        </span>
+                    }
+                </div>
+            </div>
+
+            <div class="list-group mt-3">
+                <a asp-action="Profile" class="list-group-item list-group-item-action active">
+                    <i class="fas fa-user me-2"></i>Hesap Bilgilerim
+                </a>
+                <a asp-action="Orders" class="list-group-item list-group-item-action">
+                    <i class="fas fa-box me-2"></i>Siparişlerim
+                </a>
+                <a asp-action="Addresses" class="list-group-item list-group-item-action">
+                    <i class="fas fa-map-marker-alt me-2"></i>Adreslerim
+                </a>
+                <a asp-action="Favorites" class="list-group-item list-group-item-action">
+                    <i class="fas fa-heart me-2"></i>Favorilerim
+                </a>
+                <a asp-action="Reviews" class="list-group-item list-group-item-action">
+                    <i class="fas fa-comment me-2"></i>Yorumlarım
+                </a>
+                <a asp-action="Settings" class="list-group-item list-group-item-action">
+                    <i class="fas fa-cog me-2"></i>Ayarlar
+                </a>
+                <a asp-action="Logout" class="list-group-item list-group-item-action text-danger">
+                    <i class="fas fa-sign-out-alt me-2"></i>Çıkış Yap
+                </a>
+            </div>
+        </div>
+
+        <!-- Sağ İçerik -->
+        <div class="col-md-9">
+            <!-- Başarı/Hata Mesajları -->
+            @if (ViewBag.Success != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" Rol="alert">
+                    <i class="fas fa-check-circle me-2"></i>@ViewBag.Success
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            <!-- Hesap Bilgileri -->
+            <div class="card mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="fas fa-user me-2"></i>Hesap Bilgilerim</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" asp-action="UpdateProfile">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-user me-1 text-primary"></i>Ad
+                                </label>
+                                <input type="text" class="form-control" asp-for="Ad" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-user me-1 text-primary"></i>Soyad
+                                </label>
+                                <input type="text" class="form-control" asp-for="Soyad" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-envelope me-1 text-primary"></i>E-posta
+                            </label>
+                            <input type="email" class="form-control bg-light" value="@Model.Email" readonly>
+                            <small class="text-muted">E-posta adresi değiştirilemez</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-phone me-1 text-primary"></i>Telefon
+                            </label>
+                            <input type="tel" class="form-control" asp-for="TelefonNumarasi" placeholder="0555 555 55 55">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-calendar me-1 text-primary"></i>Üyelik Tarihi
+                            </label>
+                            <input type="text" class="form-control bg-light" value="@Model.OlusturmaTarihi.ToString("dd MMMM yyyy")" readonly>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Değişiklikleri Kaydet
+                            </button>
+                            <a asp-action="Profile" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>İptal
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Şifre Değiştirme -->
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="fas fa-lock me-2"></i>Şifre Değiştir</h5>
+                </div>
+                <div class="card-body">
+                    <div id="passwordMessage"></div>
+                    
+                    <form id="changePasswordForm">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-key me-1 text-primary"></i>Mevcut Şifre
+                            </label>
+                            <input type="password" class="form-control" id="currentPassword" required>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-lock me-1 text-primary"></i>Yeni Şifre
+                                </label>
+                                <input type="password" class="form-control" id="newPassword" required>
+                                <small class="text-muted">En az 6 karakter</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-lock me-1 text-primary"></i>Yeni Şifre (Tekrar)
+                                </label>
+                                <input type="password" class="form-control" id="confirmPassword" required>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-warning">
+                            <i class="fas fa-key me-2"></i>Şifreyi Değiştir
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- İstatistikler -->
+            <div class="row mt-4">
+                <div class="col-md-4">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <i class="fas fa-box fa-2x text-primary mb-2"></i>
+                            <h3>0</h3>
+                            <p class="text-muted mb-0">Toplam Sipariş</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <i class="fas fa-heart fa-2x text-danger mb-2"></i>
+                            <h3>0</h3>
+                            <p class="text-muted mb-0">Favori Ürün</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <i class="fas fa-comment fa-2x text-warning mb-2"></i>
+                            <h3>0</h3>
+                            <p class="text-muted mb-0">Yorum</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Ekstra boşluk footer için -->
+    <div style="height: 100px;"></div>
+</div>
+
+@section Scripts {
+    <script>
+        function uploadProfilePhoto(input) {
+            if (input.files && input.files[0]) {
+                var formData = new FormData();
+                formData.append('photo', input.files[0]);
+                
+                $.ajax({
+                    url: '@Url.Action("UploadProfilePhoto", "Account")',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(data) {
+                        if (data.success) {
+                            // Fotoğrafı güncelle
+                            if ($('#profilePhoto').length) {
+                                $('#profilePhoto').attr('src', data.photoUrl);
+                            } else {
+                                $('#profileIcon').replaceWith(
+                                    '<img src="' + data.photoUrl + '" alt="Profil Fotoğrafı" class="rounded-circle" style="width: 120px; height: 120px; object-fit: cover;" id="profilePhoto">'
+                                );
+                            }
+                            
+                            // Sil butonu yoksa ekle
+                            if ($('.btn-outline-danger').length === 0) {
+                                $('.btn-outline-primary').after(
+                                    '<button type="button" class="btn btn-sm btn-outline-danger mt-1" onclick="deleteProfilePhoto()">' +
+                                    '<i class="fas fa-trash me-1"></i>Sil</button>'
+                                );
+                            }
+                            
+                            alert(data.message);
+                        } else {
+                            alert(data.message);
+                        }
+                    },
+                    error: function() {
+                        alert('Fotoğraf yüklenirken bir hata oluştu!');
+                    }
+                });
+            }
+        }
+        
+        function deleteProfilePhoto() {
+            if (!confirm('Profil fotoğrafınızı silmek istediğinizden emin misiniz?')) {
+                return;
+            }
+            
+            $.post('@Url.Action("DeleteProfilePhoto", "Account")', function(data) {
+                if (data.success) {
+                    // Fotoğrafı icon ile değiştir
+                    $('#profilePhoto').replaceWith(
+                        '<i class="fas fa-user-circle fa-5x text-primary" id="profileIcon"></i>'
+                    );
+                    
+                    // Sil butonunu kaldır
+                    $('.btn-outline-danger').remove();
+                    
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert(data.message);
+                }
+            });
+        }
+        
+        $(document).ready(function() {
+            // Şifre değiştirme formu
+            $('#changePasswordForm').submit(function(e) {
+                e.preventDefault();
+                
+                var currentPassword = $('#currentPassword').val();
+                var newPassword = $('#newPassword').val();
+                var confirmPassword = $('#confirmPassword').val();
+                
+                $.post('@Url.Action("ChangePassword", "Account")', {
+                    currentPassword: currentPassword,
+                    newPassword: newPassword,
+                    confirmPassword: confirmPassword
+                }, function(data) {
+                    if (data.success) {
+                        $('#passwordMessage').html(
+                            '<div class="alert alert-success alert-dismissible fade show">' +
+                            '<i class="fas fa-check-circle me-2"></i>' + data.message +
+                            '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+                            '</div>'
+                        );
+                        $('#changePasswordForm')[0].reset();
+                    } else {
+                        $('#passwordMessage').html(
+                            '<div class="alert alert-danger alert-dismissible fade show">' +
+                            '<i class="fas fa-exclamation-circle me-2"></i>' + data.message +
+                            '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+                            '</div>'
+                        );
+                    }
+                    
+                    // Mesajı 5 saniye sonra kaldır
+                    setTimeout(function() {
+                        $('#passwordMessage .alert').fadeOut();
+                    }, 5000);
+                });
+            });
+        });
+    </script>
+}
+
+<style>
+    .list-group-item.active {
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        border-color: #667eea;
+    }
+    
+    .card {
+        border: none;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        border-radius: 10px;
+    }
+    
+    .card-header {
+        border-bottom: 2px solid #f0f0f0;
+        padding: 1rem 1.5rem;
+    }
+    
+    .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+    
+    .btn-primary {
+        background: linear-gradient(45deg, #667eea, #764ba2);
+        border: none;
+    }
+    
+    .btn-primary:hover {
+        background: linear-gradient(45deg, #764ba2, #667eea);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+</style>

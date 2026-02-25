@@ -1,0 +1,138 @@
+@model TrendyolClone.Models.DTOs.SaticiFinansDto
+@{
+    ViewData["Title"] = "Finansal Rapor";
+}
+
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2>Finansal Rapor</h2>
+        </div>
+    </div>
+
+    <!-- Özet Kartlar -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h6 class="card-title">Toplam Satış</h6>
+                    <h3>@Model.ToplamSatis.ToString("C")</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <h6 class="card-title">Toplam Komisyon</h6>
+                    <h3>@Model.ToplamKomisyon.ToString("C")</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h6 class="card-title">Net Kazanç</h6>
+                    <h3>@Model.NetKazanc.ToString("C")</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h6 class="card-title">Bekleyen Ödeme</h6>
+                    <h3>@Model.BekleyenOdeme.ToString("C")</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Aylık Rapor -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Aylık Satış Raporu</h5>
+        </div>
+        <div class="card-body">
+            <canvas id="aylikGrafik" height="80"></canvas>
+        </div>
+    </div>
+
+    <!-- Detaylı Tablo -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Aylık Detay</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Dönem</th>
+                            <th>Sipariş Sayısı</th>
+                            <th>Satış</th>
+                            <th>Komisyon</th>
+                            <th>Net Kazanç</th>
+                            <th>İşlem</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var ay in Model.AylikRapor.OrderByDescending(a => a.Yil).ThenByDescending(a => a.Ay))
+                        {
+                            var donem = ay.Yil * 100 + ay.Ay;
+                            <tr>
+                                <td><strong>@ay.Ay/@ay.Yil</strong></td>
+                                <td>@ay.SiparisSayisi</td>
+                                <td>@ay.Satis.ToString("C")</td>
+                                <td class="text-danger">-@ay.Komisyon.ToString("C")</td>
+                                <td><strong class="text-success">@ay.Net.ToString("C")</strong></td>
+                                <td>
+                                    <form method="post" action="@Url.Action("RequestPayment", new { donem = donem })" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-outline-primary">
+                                            Ödeme Talebi
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('aylikGrafik');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: [@Html.Raw(string.Join(",", Model.AylikRapor.Select(a => $"'{a.Ay}/{a.Yil}'")))],
+            datasets: [
+                {
+                    label: 'Satış',
+                    data: [@string.Join(",", Model.AylikRapor.Select(a => a.Satis))],
+                    backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                    borderColor: 'rgb(54, 162, 235)',
+                    borderWidth: 1
+                },
+                {
+                    label: 'Net Kazanç',
+                    data: [@string.Join(",", Model.AylikRapor.Select(a => a.Net))],
+                    backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                    borderColor: 'rgb(75, 192, 192)',
+                    borderWidth: 1
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>
+}

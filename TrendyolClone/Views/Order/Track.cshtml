@@ -1,0 +1,210 @@
+@model TrendyolClone.Models.DTOs.KargoTakipDto
+@{
+    ViewData["Title"] = "Kargo Takip";
+    var siparis = ViewBag.Siparis as TrendyolClone.Models.DTOs.SiparisDetayDto;
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3><i class="fas fa-truck me-2"></i>Kargo Takip</h3>
+                <a asp-action="Details" asp-route-id="@siparis.Id" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left me-2"></i>Sipariş Detayına Dön
+                </a>
+            </div>
+
+            @if (Model != null)
+            {
+                <!-- Kargo Bilgileri -->
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5 class="mb-0">@siparis.SiparisNo</h5>
+                                <small>@siparis.SiparisTarihi.ToString("dd MMMM yyyy")</small>
+                            </div>
+                            <div class="col-md-6 text-end">
+                                <h5 class="mb-0">@Model.KargoFirmasi</h5>
+                                <small>Takip No: @Model.TakipNo</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong>Kargo Durumu:</strong>
+                                <p class="mb-0">
+                                    @if (!string.IsNullOrEmpty(Model.KargoDurumu))
+                                    {
+                                        <span class="badge bg-info fs-6">@Model.KargoDurumu</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Bilgi Yok</span>
+                                    }
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                @if (Model.TahminiTeslimatTarihi.HasValue)
+                                {
+                                    <strong>Tahmini Teslimat:</strong>
+                                    <p class="mb-0 text-success fw-bold">
+                                        @Model.TahminiTeslimatTarihi.Value.ToString("dd MMMM yyyy")
+                                    </p>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kargo Hareketleri -->
+                @if (Model.Hareketler != null && Model.Hareketler.Any())
+                {
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-route me-2"></i>Kargo Hareketleri</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="cargo-timeline">
+                                @foreach (var hareket in Model.Hareketler.OrderByDescending(h => h.Tarih))
+                                {
+                                    var isFirst = hareket == Model.Hareketler.OrderByDescending(h => h.Tarih).First();
+                                    <div class="timeline-item @(isFirst ? "active" : "")">
+                                        <div class="timeline-marker">
+                                            @if (hareket.Durum.Contains("Teslim"))
+                                            {
+                                                <i class="fas fa-check-circle"></i>
+                                            }
+                                            else if (hareket.Durum.Contains("Dağıtım"))
+                                            {
+                                                <i class="fas fa-truck"></i>
+                                            }
+                                            else if (hareket.Durum.Contains("Transfer"))
+                                            {
+                                                <i class="fas fa-exchange-alt"></i>
+                                            }
+                                            else
+                                            {
+                                                <i class="fas fa-circle"></i>
+                                            }
+                                        </div>
+                                        <div class="timeline-content">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <h6 class="mb-0">@hareket.Durum</h6>
+                                                <small class="text-muted">@hareket.Tarih.ToString("dd MMM yyyy HH:mm")</small>
+                                            </div>
+                                            @if (!string.IsNullOrEmpty(hareket.Aciklama))
+                                            {
+                                                <p class="mb-1 text-muted">@hareket.Aciklama</p>
+                                            }
+                                            @if (!string.IsNullOrEmpty(hareket.Lokasyon))
+                                            {
+                                                <small class="text-muted">
+                                                    <i class="fas fa-map-marker-alt me-1"></i>@hareket.Lokasyon
+                                                </small>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Henüz kargo hareketi bilgisi bulunmamaktadır. Lütfen daha sonra tekrar kontrol edin.
+                    </div>
+                }
+
+                <!-- Teslimat Adresi -->
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="fas fa-map-marker-alt me-2"></i>Teslimat Adresi</h6>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-0">@siparis.TeslimatAdresi</p>
+                    </div>
+                </div>
+
+                <!-- Yardım -->
+                <div class="card mt-3">
+                    <div class="card-body">
+                        <h6><i class="fas fa-question-circle me-2 text-info"></i>Kargo Hakkında</h6>
+                        <ul class="mb-0">
+                            <li>Kargo bilgileri otomatik olarak güncellenmektedir.</li>
+                            <li>Teslimat sırasında evde bulunmanız gerekmektedir.</li>
+                            <li>Kargo ile ilgili sorunlar için müşteri hizmetlerimizle iletişime geçebilirsiniz.</li>
+                            <li>Takip numarası ile kargo firmasının web sitesinden de takip yapabilirsiniz.</li>
+                        </ul>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Bu sipariş için henüz kargo bilgisi eklenmemiştir.
+                </div>
+                <a asp-action="Details" asp-route-id="@siparis.Id" class="btn btn-primary">
+                    <i class="fas fa-arrow-left me-2"></i>Sipariş Detayına Dön
+                </a>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <style>
+        .cargo-timeline {
+            position: relative;
+            padding-left: 50px;
+        }
+        .timeline-item {
+            position: relative;
+            padding-bottom: 30px;
+        }
+        .timeline-item:not(:last-child)::before {
+            content: '';
+            position: absolute;
+            left: -35px;
+            top: 35px;
+            width: 2px;
+            height: calc(100% - 15px);
+            background: #dee2e6;
+        }
+        .timeline-marker {
+            position: absolute;
+            left: -45px;
+            top: 0;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: #dee2e6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+        }
+        .timeline-item.active .timeline-marker {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            animation: pulse 2s infinite;
+        }
+        .timeline-item.active .timeline-content h6 {
+            color: #667eea;
+            font-weight: bold;
+        }
+        @@keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            }
+            50% {
+                box-shadow: 0 4px 25px rgba(102, 126, 234, 0.6);
+            }
+        }
+    </style>
+}

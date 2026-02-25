@@ -1,0 +1,129 @@
+﻿@model List<TrendyolClone.Models.Rol>
+@{
+    ViewData["Title"] = "Rol Yönetimi";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-Kullanici-tag me-2"></i>Rol Yönetimi</h2>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addRoleModal">
+        <i class="fas fa-plus me-2"></i>Yeni Rol
+    </button>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" Rol="alert">
+        <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Rol Adı</th>
+                        <th>Açıklama</th>
+                        <th>Kullanıcı Sayısı</th>
+                        <th>Durum</th>
+                        <th>İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var Rol in Model)
+                    {
+                        <tr>
+                            <td>@Rol.Id</td>
+                            <td>
+                                <span class="badge bg-primary">@Rol.Ad</span>
+                            </td>
+                            <td>@Rol.Aciklama</td>
+                            <td>
+                                <span class="badge bg-info">@Rol.Kullanicilar.Count</span>
+                            </td>
+                            <td>
+                                @if (Rol.Aktif)
+                                {
+                                    <span class="badge bg-success">Aktif</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">Pasif</span>
+                                }
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary me-1" onclick="editRole(@Rol.Id, '@Rol.Ad', '@Rol.Aciklama')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deleteRole(@Rol.Id)">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Rol Ekleme Modal -->
+<div class="modal fade" id="addRoleModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Yeni Rol Ekle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="addRoleForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Rol Adı</label>
+                        <input type="text" class="form-control" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Açıklama</label>
+                        <textarea class="form-control" name="description" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-primary">Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Rol ekleme
+        $('#addRoleForm').submit(function(e) {
+            e.preventDefault();
+            
+            $.post('@Url.Action("AddRole", "Admin")', $(this).serialize(), function(data) {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Hata: ' + data.message);
+                }
+            });
+        });
+
+        // Rol silme
+        function deleteRole(id) {
+            if (confirm('Bu rolü silmek istediğinizden emin misiniz?')) {
+                $.post('@Url.Action("DeleteRole", "Admin")', { id: id }, function(data) {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Hata: ' + data.message);
+                    }
+                });
+            }
+        }
+    </script>
+}

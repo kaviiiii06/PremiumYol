@@ -1,0 +1,129 @@
+@{
+    ViewData["Title"] = "Ayarlar";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3><i class="fas fa-cog me-2"></i>Ayarlar</h3>
+                <a asp-action="Profile" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left me-2"></i>Hesabıma Dön
+                </a>
+            </div>
+
+            <!-- Bildirim Ayarları -->
+            <div class="card mb-3">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="fas fa-bell me-2"></i>Bildirim Ayarları</h5>
+                </div>
+                <div class="card-body">
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="emailNotif" checked>
+                        <label class="form-check-label" for="emailNotif">
+                            <strong>E-posta Bildirimleri</strong><br>
+                            <small class="text-muted">Sipariş durumu ve kampanyalar hakkında e-posta alın</small>
+                        </label>
+                    </div>
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="smsNotif" checked>
+                        <label class="form-check-label" for="smsNotif">
+                            <strong>SMS Bildirimleri</strong><br>
+                            <small class="text-muted">Önemli güncellemeler için SMS alın</small>
+                        </label>
+                    </div>
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="pushNotif">
+                        <label class="form-check-label" for="pushNotif">
+                            <strong>Push Bildirimleri</strong><br>
+                            <small class="text-muted">Tarayıcı bildirimleri alın</small>
+                        </label>
+                    </div>
+                    <button class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>Kaydet
+                    </button>
+                </div>
+            </div>
+
+            <!-- Gizlilik Ayarları -->
+            <div class="card mb-3">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="fas fa-shield-alt me-2"></i>Gizlilik Ayarları</h5>
+                </div>
+                <div class="card-body">
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="profilePublic">
+                        <label class="form-check-label" for="profilePublic">
+                            <strong>Profilimi Herkese Açık Yap</strong><br>
+                            <small class="text-muted">Yorumlarınız ve değerlendirmeleriniz herkese görünür olsun</small>
+                        </label>
+                    </div>
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="showOrders">
+                        <label class="form-check-label" for="showOrders">
+                            <strong>Sipariş Geçmişimi Göster</strong><br>
+                            <small class="text-muted">Satın aldığınız ürünler profilinizde görünsün</small>
+                        </label>
+                    </div>
+                    <button class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>Kaydet
+                    </button>
+                </div>
+            </div>
+
+            <!-- Dil ve Bölge -->
+            <div class="card mb-3">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="fas fa-globe me-2"></i>Dil ve Bölge</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Dil</label>
+                            <select class="form-select">
+                                <option selected>Türkçe</option>
+                                <option>English</option>
+                                <option>Deutsch</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Para Birimi</label>
+                            <select class="form-select">
+                                <option selected>TRY (₺)</option>
+                                <option>USD ($)</option>
+                                <option>EUR (€)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>Kaydet
+                    </button>
+                </div>
+            </div>
+
+            <!-- Hesap İşlemleri -->
+            <div class="card border-danger">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0 text-danger"><i class="fas fa-exclamation-triangle me-2"></i>Tehlikeli Bölge</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Dikkat!</strong> Bu işlemler geri alınamaz. Lütfen dikkatli olun.
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6><i class="fas fa-trash me-2"></i>Hesabı Sil</h6>
+                        <p class="text-muted small mb-2">
+                            Hesabınızı sildiğinizde tüm verileriniz kalıcı olarak silinecektir. 
+                            Bu işlem geri alınamaz.
+                        </p>
+                        <a asp-action="DeleteAccount" class="btn btn-danger">
+                            <i class="fas fa-trash-alt me-2"></i>Hesabımı Sil
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,49 @@
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Warning",
+      "Microsoft.AspNetCore": "Warning",
+      "Microsoft.EntityFrameworkCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*",
+  "ConnectionStrings": {
+    "DefaultConnection": "YOUR_PRODUCTION_CONNECTION_STRING"
+  },
+  "DropshippingAPIs": {
+    "AliExpress": {
+      "BaseUrl": "https://api-sg.aliexpress.com/sync",
+      "AppKey": "YOUR_PRODUCTION_ALIEXPRESS_APP_KEY",
+      "AppSecret": "YOUR_PRODUCTION_ALIEXPRESS_APP_SECRET",
+      "TrackingId": "YOUR_PRODUCTION_TRACKING_ID"
+    },
+    "CJDropshipping": {
+      "BaseUrl": "https://developers.cjdropshipping.com/api2.0/v1",
+      "Email": "YOUR_PRODUCTION_CJ_EMAIL",
+      "Password": "YOUR_PRODUCTION_CJ_PASSWORD"
+    },
+    "DHgate": {
+      "BaseUrl": "https://api.dhgate.com/dop/router",
+      "AppKey": "YOUR_PRODUCTION_DHGATE_APP_KEY",
+      "AppSecret": "YOUR_PRODUCTION_DHGATE_APP_SECRET"
+    }
+  },
+  "Payment": {
+    "Iyzico": {
+      "ApiKey": "YOUR_PRODUCTION_IYZICO_API_KEY",
+      "SecretKey": "YOUR_PRODUCTION_IYZICO_SECRET_KEY",
+      "BaseUrl": "https://api.iyzipay.com"
+    }
+  },
+  "RateLimiting": {
+    "EnableRateLimiting": true,
+    "PermitLimit": 100,
+    "Window": 60,
+    "QueueLimit": 10
+  },
+  "Security": {
+    "RequireHttps": true,
+    "EnableCORS": false,
+    "AllowedOrigins": []
+  }
+}

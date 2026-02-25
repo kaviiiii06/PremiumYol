@@ -1,0 +1,123 @@
+﻿@model List<TrendyolClone.Models.Kategori>
+@{
+    ViewData["Title"] = "Kategori Yönetimi";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-tags me-2"></i>Kategori Yönetimi</h2>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
+        <i class="fas fa-plus me-2"></i>Yeni Kategori
+    </button>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" Rol="alert">
+        <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Kategori Adı</th>
+                        <th>Açıklama</th>
+                        <th>Durum</th>
+                        <th>İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var Kategori in Model)
+                    {
+                        <tr>
+                            <td>@Kategori.Id</td>
+                            <td>@Kategori.Ad</td>
+                            <td>@Kategori.Aciklama</td>
+                            <td>
+                                @if (Kategori.Aktif)
+                                {
+                                    <span class="badge bg-success">Aktif</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">Pasif</span>
+                                }
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary me-1" onclick="editCategory(@Kategori.Id, '@Kategori.Ad', '@Kategori.Aciklama')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deleteCategory(@Kategori.Id)">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Kategori Ekleme Modal -->
+<div class="modal fade" id="addCategoryModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Yeni Kategori Ekle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="addCategoryForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Kategori Adı</label>
+                        <input type="text" class="form-control" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Açıklama</label>
+                        <textarea class="form-control" name="description" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-primary">Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Kategori ekleme
+        $('#addCategoryForm').submit(function(e) {
+            e.preventDefault();
+            
+            $.post('@Url.Action("AddCategory", "Admin")', $(this).serialize(), function(data) {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Hata: ' + data.message);
+                }
+            });
+        });
+
+        // Kategori silme
+        function deleteCategory(id) {
+            if (confirm('Bu kategoriyi silmek istediğinizden emin misiniz?')) {
+                $.post('@Url.Action("DeleteCategory", "Admin")', { id: id }, function(data) {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Hata: ' + data.message);
+                    }
+                });
+            }
+        }
+    </script>
+}

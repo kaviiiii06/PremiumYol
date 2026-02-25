@@ -1,0 +1,207 @@
+﻿@model List<TrendyolClone.Models.Siparis>
+@{
+    ViewData["Title"] = "Sipariş Yönetimi";
+}
+
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-shopping-cart me-2"></i>Sipariş Yönetimi</h2>
+        <a asp-action="Dashboard" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Dashboard'a Dön
+        </a>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+            <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Tüm Siparişler (@Model.Count)</h5>
+        </div>
+        <div class="card-body">
+            @if (Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Sipariş No</th>
+                                <th>Müşteri</th>
+                                <th>Tarih</th>
+                                <th>Tutar</th>
+                                <th>Durum</th>
+                                <th>Ürünler</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var siparis in Model)
+                            {
+                                <tr>
+                                    <td><strong>#@siparis.Id</strong></td>
+                                    <td>
+                                        @if (siparis.Kullanici != null)
+                                        {
+                                            <span>@siparis.Kullanici.Ad @siparis.Kullanici.Soyad</span><br>
+                                            <small class="text-muted">@siparis.Kullanici.Email</small>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Kullanıcı bulunamadı</span>
+                                        }
+                                    </td>
+                                    <td>@siparis.SiparisTarihi.ToString("dd.MM.yyyy HH:mm")</td>
+                                    <td><strong class="text-primary">@siparis.ToplamTutar.ToString("C")</strong></td>
+                                    <td>
+                                        <select class="form-select form-select-sm status-select" data-Siparis-id="@siparis.Id">
+                                            <option value="0" selected="@(siparis.Durum == TrendyolClone.Models.SiparisDurumu.Beklemede)">Beklemede</option>
+                                            <option value="1" selected="@(siparis.Durum == TrendyolClone.Models.SiparisDurumu.Onaylandi)">Onaylandı</option>
+                                            <option value="2" selected="@(siparis.Durum == TrendyolClone.Models.SiparisDurumu.Kargoda)">Kargoda</option>
+                                            <option value="3" selected="@(siparis.Durum == TrendyolClone.Models.SiparisDurumu.TeslimEdildi)">Teslim Edildi</option>
+                                            <option value="4" selected="@(siparis.Durum == TrendyolClone.Models.SiparisDurumu.IptalEdildi)">İptal Edildi</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-info view-items-btn" data-Siparis-id="@siparis.Id">
+                                            <i class="fas fa-eye me-1"></i>Görüntüle (@siparis.SiparisKalemleri.Count)
+                                        </button>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-danger delete-Siparis-btn" data-Siparis-id="@siparis.Id">
+                                            <i class="fas fa-trash me-1"></i>Sil
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr class="Siparis-items-row" id="items-row-@siparis.Id" style="display: none;">
+                                    <td colspan="7">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <h6>Sipariş Detayları:</h6>
+                                                <div class="row mb-3">
+                                                    <div class="col-md-6">
+                                                        <p class="mb-1"><strong>Teslimat Adresi:</strong></p>
+                                                        <p class="text-muted">@siparis.TeslimatAdresi</p>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <p class="mb-1"><strong>Ödeme Yöntemi:</strong></p>
+                                                        <p class="text-muted">@(string.IsNullOrEmpty(siparis.OdemeYontemi) ? "Belirtilmemiş" : siparis.OdemeYontemi)</p>
+                                                    </div>
+                                                </div>
+                                                <h6>Ürünler:</h6>
+                                                <table class="table table-sm">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Ürün</th>
+                                                            <th>Birim Fiyat</th>
+                                                            <th>Adet</th>
+                                                            <th>Toplam</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @foreach (var item in siparis.SiparisKalemleri)
+                                                        {
+                                                            <tr>
+                                                                <td>
+                                                                    @if (item.Urun != null)
+                                                                    {
+                                                                        <div class="d-flex align-items-center">
+                                                                            <img src="@item.Urun.ResimUrl" alt="@item.Urun.Ad" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;" class="me-2">
+                                                                            <span>@item.Urun.Ad</span>
+                                                                        </div>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <span class="text-muted">Ürün bulunamadı</span>
+                                                                    }
+                                                                </td>
+                                                                <td>@item.BirimFiyat.ToString("C")</td>
+                                                                <td>@item.Miktar</td>
+                                                                <td><strong>@((item.BirimFiyat * item.Miktar).ToString("C"))</strong></td>
+                                                            </tr>
+                                                        }
+                                                    </tbody>
+                                                    <tfoot>
+                                                        <tr>
+                                                            <td colspan="3" class="text-end"><strong>Toplam:</strong></td>
+                                                            <td><strong class="text-primary">@siparis.ToplamTutar.ToString("C")</strong></td>
+                                                        </tr>
+                                                    </tfoot>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">Henüz sipariş yok.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Ürünleri görüntüle
+            $('.view-items-btn').click(function() {
+                var orderId = $(this).data('Siparis-id');
+                $('#items-row-' + orderId).slideToggle();
+            });
+
+            // Sipariş durumu değiştir
+            $('.Durum-select').change(function() {
+                var orderId = $(this).data('Siparis-id');
+                var status = $(this).val();
+                
+                if (!confirm('Sipariş durumunu değiştirmek istediğinize emin misiniz?')) {
+                    $(this).val($(this).find('option:selected').data('original'));
+                    return;
+                }
+
+                $.post('@Url.Action("UpdateSiparisDurumu", "Admin")', {
+                    orderId: orderId,
+                    status: status
+                }, function(data) {
+                    if (data.success) {
+                        alert(data.message);
+                    } else {
+                        alert(data.message);
+                    }
+                });
+            });
+
+            // Sipariş sil
+            $('.delete-Siparis-btn').click(function() {
+                if (!confirm('Bu siparişi silmek istediğinize emin misiniz? Bu işlem geri alınamaz!')) {
+                    return;
+                }
+
+                var orderId = $(this).data('Siparis-id');
+
+                $.post('@Url.Action("DeleteOrder", "Admin")', {
+                    id: orderId
+                }, function(data) {
+                    if (data.success) {
+                        alert(data.message);
+                        location.reload();
+                    } else {
+                        alert(data.message);
+                    }
+                });
+            });
+        });
+    </script>
+}

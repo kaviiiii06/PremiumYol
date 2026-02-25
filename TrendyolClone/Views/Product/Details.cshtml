@@ -1,0 +1,748 @@
+﻿@model TrendyolClone.Models.ViewModels.UrunDetayViewModel
+@{
+    ViewData["Title"] = Model.Urun.Ad;
+}
+
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Ana Sayfa</a></li>
+            <li class="breadcrumb-item"><a asp-controller="Urun" asp-action="Index">Ürünler</a></li>
+            <li class="breadcrumb-item"><a asp-controller="Urun" asp-action="Index" asp-route-KategoriId="@Model.Urun.KategoriId">@Model.Urun.Kategori?.Ad</a></li>
+            <li class="breadcrumb-item active" aria-current="page">@Model.Urun.Ad</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <!-- Ürün Görseli -->
+        <div class="col-md-6">
+            <div class="card">
+                @if (Model.ResimVarMi)
+                {
+                    <div id="productImageCarousel" class="carousel slide" data-bs-ride="carousel">
+                        <div class="carousel-indicators">
+                            @for (int i = 0; i < Model.Resimler.Count; i++)
+                            {
+                                <button type="button" data-bs-target="#productImageCarousel" data-bs-slide-to="@i" class="@(i == 0 ? "active" : "")" aria-current="@(i == 0 ? "true" : "false")"></button>
+                            }
+                        </div>
+                        <div class="carousel-inner">
+                            @for (int i = 0; i < Model.Resimler.Count; i++)
+                            {
+                                <div class="carousel-item @(i == 0 ? "active" : "")">
+                                    <img src="@Model.Resimler[i].ResimUrl" class="d-block w-100" alt="@Model.Urun.Ad" style="height: 500px; object-fit: contain; padding: 20px;">
+                                </div>
+                            }
+                        </div>
+                        <button class="carousel-control-prev" type="button" data-bs-target="#productImageCarousel" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Önceki</span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#productImageCarousel" data-bs-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Sonraki</span>
+                        </button>
+                    </div>
+                    
+                    <div class="d-flex justify-content-center mt-3 px-3 pb-3" style="gap: 10px; overflow-x: auto;">
+                        @for (int i = 0; i < Model.Resimler.Count; i++)
+                        {
+                            <img src="@Model.Resimler[i].ResimUrl" class="img-thumbnail thumbnail-preview" data-bs-target="#productImageCarousel" data-bs-slide-to="@i" style="width: 80px; height: 80px; object-fit: cover; cursor: pointer;" alt="Thumbnail @(i+1)">
+                        }
+                    </div>
+                }
+                else
+                {
+                    <img src="@Model.Urun.ResimUrl" class="card-img-top" alt="@Model.Urun.Ad" style="width: 100%; height: 500px; object-fit: contain; padding: 20px;">
+                }
+            </div>
+        </div>
+
+        <!-- Ürün Bilgileri -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title">@Model.Urun.Ad</h2>
+                    <p class="text-muted">@Model.Urun.Marka</p>
+
+                    @if (Model.Urun.Puan > 0)
+                    {
+                        <div class="mb-3">
+                            @for (int i = 1; i <= 5; i++)
+                            {
+                                <i class="fas fa-star @(i <= Model.Urun.Puan ? "text-warning" : "text-muted")"></i>
+                            }
+                            <span class="ms-2">@Model.Urun.Puan / 5.0</span>
+                            <span class="text-muted">(@Model.Urun.YorumSayisi değerlendirme)</span>
+                        </div>
+                    }
+                    
+                    @if (Model.SecilenVaryasyon != null)
+                    {
+                        <p class="text-muted small mb-2">
+                            <i class="fas fa-barcode me-1"></i>SKU: <strong>@Model.SecilenVaryasyon.SKU</strong>
+                        </p>
+                    }
+
+                    <hr>
+
+                    <!-- Varyasyon Seçimi -->
+                    @if (Model.VaryasyonVarMi)
+                    {
+                        <div class="mb-4">
+                            @if (Model.RenkSecenekleri.Any())
+                            {
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Renk Seçin:</label>
+                                    <div class="d-flex flex-wrap gap-2" id="colorOptions">
+                                        @foreach (var renk in Model.RenkSecenekleri)
+                                        {
+                                            var isSelected = Model.SecilenVaryasyon?.Renk == renk;
+                                            <button type="button" class="btn btn-outline-primary color-option @(isSelected ? "active" : "")" data-color="@renk">
+                                                @renk
+                                            </button>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                            
+                            @if (Model.BedenSecenekleri.Any())
+                            {
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Beden Seçin:</label>
+                                    <div class="d-flex flex-wrap gap-2" id="sizeOptions">
+                                        @foreach (var beden in Model.BedenSecenekleri)
+                                        {
+                                            var isSelected = Model.SecilenVaryasyon?.Beden == beden;
+                                            <button type="button" class="btn btn-outline-primary size-option @(isSelected ? "active" : "")" data-size="@beden">
+                                                @beden
+                                            </button>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                        <hr>
+                    }
+
+                    <div class="mb-4">
+                        @if (Model.SecilenVaryasyon?.IndirimdeMi == true)
+                        {
+                            <div class="mb-2">
+                                <span class="badge bg-danger">İndirimli</span>
+                            </div>
+                            <h3 class="text-danger mb-0" id="currentPrice">@Model.GecerliFiyat.ToString("C")</h3>
+                            <p class="text-decoration-line-through text-muted" id="originalPrice">@Model.SecilenVaryasyon.Fiyat.ToString("C")</p>
+                            <p class="text-success">
+                                <i class="fas fa-tag me-1"></i>
+                                <span id="discountPercent">%@(((Model.SecilenVaryasyon.Fiyat - Model.GecerliFiyat) / Model.SecilenVaryasyon.Fiyat * 100).ToString("F0"))</span> indirim
+                            </p>
+                        }
+                        else
+                        {
+                            <h3 class="text-primary mb-0" id="currentPrice">@Model.GecerliFiyat.ToString("C")</h3>
+                        }
+                    </div>
+
+                    <div class="mb-4" id="stockInfo">
+                        @if (Model.StokVarMi)
+                        {
+                            @if (Model.SecilenVaryasyon?.StokDusukMu == true)
+                            {
+                                <p class="text-warning">
+                                    <i class="fas fa-exclamation-triangle me-1"></i>
+                                    Son @Model.MevcutStok adet!
+                                </p>
+                            }
+                            else
+                            {
+                                <p class="text-success">
+                                    <i class="fas fa-check-circle me-1"></i>
+                                    Stokta (@Model.MevcutStok adet)
+                                </p>
+                            }
+                        }
+                        else
+                        {
+                            <p class="text-danger">
+                                <i class="fas fa-times-circle me-1"></i>
+                                Stokta yok
+                            </p>
+                        }
+                    </div>
+
+                    @if (Model.StokVarMi)
+                    {
+                        <div class="mb-4">
+                            <label class="form-label" for="Miktar">Miktar:</label>
+                            <div class="input-group" style="max-width: 150px;">
+                                <button class="btn btn-outline-secondary" type="button" id="decreaseQty">-</button>
+                                <input type="number" class="form-control text-center" id="Miktar" name="Miktar" value="1" min="1" max="@Model.MevcutStok">
+                                <button class="btn btn-outline-secondary" type="button" id="increaseQty">+</button>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-primary btn-lg" id="addToCartBtn" data-product-id="@Model.Urun.Id" data-variation-id="@(Model.SecilenVaryasyon?.Id ?? 0)">
+                                <i class="fas fa-shopping-cart me-2"></i>Sepete Ekle
+                            </button>
+                            @if (Context.Session.GetString("KullaniciId") != null)
+                            {
+                                <button class="btn btn-outline-danger btn-lg Favori-btn" data-Urun-id="@Model.Urun.Id">
+                                    <i class="far fa-heart me-2"></i>Favorilere Ekle
+                                </button>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Bu ürün şu anda stokta bulunmamaktadır.
+                        </div>
+                    }
+
+                    @if (Model.KargoOlculeri != null)
+                    {
+                        <div class="alert alert-info mt-3">
+                            <i class="fas fa-truck me-2"></i>
+                            @if (Model.KargoOlculeri.UcretsizKargo)
+                            {
+                                <strong>Ücretsiz Kargo</strong>
+                                <span class="badge bg-success ms-2">Ücretsiz</span>
+                            }
+                            else if (Model.KargoOlculeri.KargoUcreti.HasValue)
+                            {
+                                <strong>Kargo Ücreti:</strong> @Model.KargoOlculeri.KargoUcreti.Value.ToString("C")
+                            }
+                            else
+                            {
+                                <text><strong>Kargo</strong> - Sepette hesaplanacak</text>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info mt-3">
+                            <i class="fas fa-truck me-2"></i>
+                            <strong>Ücretsiz Kargo</strong> - Tüm siparişlerde geçerli
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ürün Açıklaması -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="fas fa-info-circle me-2"></i>Ürün Açıklaması</h4>
+                </div>
+                <div class="card-body">
+                    <p class="lead">@Model.Urun.Aciklama</p>
+                    
+                    <hr>
+                    
+                    <h5>Ürün Özellikleri</h5>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check text-success me-2"></i>Marka: <strong>@Model.Urun.Marka</strong></li>
+                        <li><i class="fas fa-check text-success me-2"></i>Kategori: <strong>@Model.Urun.Kategori?.Ad</strong></li>
+                        <li><i class="fas fa-check text-success me-2"></i>Stok Kodu: <strong>#@Model.Urun.Id</strong></li>
+                        @if (Model.OzellikVarMi)
+                        {
+                            @foreach (var ozellik in Model.Ozellikler)
+                            {
+                                <li><i class="fas fa-check text-success me-2"></i>@ozellik.OzellikAdi: <strong>@ozellik.OzellikDegeri</strong></li>
+                            }
+                        }
+                    </ul>
+                    
+                    @if (Model.KargoOlculeri != null)
+                    {
+                        <hr>
+                        <h5>Kargo Bilgileri</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <ul class="list-unstyled">
+                                    <li><i class="fas fa-weight me-2 text-primary"></i>Ağırlık: <strong>@Model.KargoOlculeri.Agirlik kg</strong></li>
+                                    <li><i class="fas fa-cube me-2 text-primary"></i>Desi: <strong>@Model.KargoOlculeri.Desi.ToString("F2")</strong></li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <ul class="list-unstyled">
+                                    <li><i class="fas fa-ruler-combined me-2 text-primary"></i>Boyutlar: <strong>@Model.KargoOlculeri.En x @Model.KargoOlculeri.Boy x @Model.KargoOlculeri.Yukseklik cm</strong></li>
+                                    @if (Model.KargoOlculeri.UcretsizKargo)
+                                    {
+                                        <li><i class="fas fa-truck me-2 text-primary"></i>Kargo: <strong>Ücretsiz</strong></li>
+                                    }
+                                    else if (Model.KargoOlculeri.KargoUcreti.HasValue)
+                                    {
+                                        <li><i class="fas fa-truck me-2 text-primary"></i>Kargo: <strong>@Model.KargoOlculeri.KargoUcreti.Value.ToString("C")</strong></li>
+                                    }
+                                </ul>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Değerlendirmeler ve Sorular -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <ul class="nav nav-tabs card-header-tabs" Rol="tablist">
+                        <li class="nav-item" Rol="presentation">
+                            <button class="nav-link active" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews" type="button" Rol="tab">
+                                <i class="fas fa-star me-2"></i>Değerlendirmeler (@ViewBag.YorumSayisi)
+                            </button>
+                        </li>
+                        <li class="nav-item" Rol="presentation">
+                            <button class="nav-link" id="questions-tab" data-bs-toggle="tab" data-bs-target="#questions" type="button" Rol="tab">
+                                <i class="fas fa-question-circle me-2"></i>Sorular & Cevaplar
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-body">
+                    <div class="tab-content">
+                        <!-- Değerlendirmeler Tab -->
+                        <div class="tab-pane fade show active" id="reviews" Rol="tabpanel">
+                            @if (ViewBag.YorumSayisi > 0)
+                            {
+                                <div class="row mb-4">
+                                    <div class="col-md-3 text-center border-end">
+                                        <h1 class="display-4 mb-0">@ViewBag.AverageRating.ToString("F1")</h1>
+                                        <div class="mb-2">
+                                            @for (int i = 1; i <= 5; i++)
+                                            {
+                                                <i class="fas fa-star @(i <= ViewBag.AverageRating ? "text-warning" : "text-muted")"></i>
+                                            }
+                                        </div>
+                                        <p class="text-muted">@ViewBag.YorumSayisi değerlendirme</p>
+                                    </div>
+                                    <div class="col-md-9">
+                                        <h5 class="mb-3">Puan Dağılımı</h5>
+                                        @for (int star = 5; star >= 1; star--)
+                                        {
+                                            var starCount = ((List<TrendyolClone.Models.Yorum>)ViewBag.Reviews).Count(r => r.Puan == star);
+                                            var percentage = ViewBag.YorumSayisi > 0 ? (starCount * 100.0 / ViewBag.YorumSayisi) : 0;
+                                            <div class="d-flex align-items-center mb-2">
+                                                <span class="me-2" style="width: 60px;">@star <i class="fas fa-star text-warning"></i></span>
+                                                <div class="progress flex-grow-1 me-2" style="height: 20px;">
+                                                    <div class="progress-bar bg-warning" Rol="progressbar" style="width: @percentage%"></div>
+                                                </div>
+                                                <span class="text-muted" style="width: 50px;">@starCount</span>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            }
+
+                            <div class="card mb-4">
+                                <div class="card-body">
+                                    <h5 class="card-title">Ürünü Değerlendir</h5>
+                                    
+                                    @if (TempData["Success"] != null)
+                                    {
+                                        <div class="alert alert-success alert-dismissible fade show" Rol="alert">
+                                            <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+                                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                        </div>
+                                    }
+                                    
+                                    @if (TempData["Error"] != null)
+                                    {
+                                        <div class="alert alert-danger alert-dismissible fade show" Rol="alert">
+                                            <i class="fas fa-exclamation-circle me-2"></i>@TempData["Error"]
+                                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                        </div>
+                                    }
+                                    
+                                    @if (Context.Session.GetString("KullaniciId") != null)
+                                    {
+                                        <form method="post" asp-controller="Urun" asp-action="AddReview">
+                                            <input type="hidden" name="UrunId" value="@Model.Urun.Id" />
+                                            
+                                            <div class="mb-3">
+                                                <label class="form-label">Puanınız *</label>
+                                                <select name="rating" class="form-select" required>
+                                                    <option value="">Puan seçiniz</option>
+                                                    <option value="1">⭐ 1 Yıldız - Çok Kötü</option>
+                                                    <option value="2">⭐⭐ 2 Yıldız - Kötü</option>
+                                                    <option value="3">⭐⭐⭐ 3 Yıldız - Orta</option>
+                                                    <option value="4">⭐⭐⭐⭐ 4 Yıldız - İyi</option>
+                                                    <option value="5">⭐⭐⭐⭐⭐ 5 Yıldız - Mükemmel</option>
+                                                </select>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label" for="reviewComment">Yorumunuz *</label>
+                                                <textarea class="form-control" id="reviewComment" name="comment" rows="4" maxlength="500" placeholder="Ürün hakkındaki düşüncelerinizi paylaşın..." required></textarea>
+                                                <small class="text-muted">Maksimum 500 karakter</small>
+                                            </div>
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="fas fa-paper-plane me-2"></i>Yorumu Gönder
+                                            </button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <div class="alert alert-info mb-0">
+                                            <i class="fas fa-info-circle me-2"></i>
+                                            Yorum yapabilmek için <a href="@Url.Action("Login", "Account")" class="alert-link">giriş yapmalısınız</a>.
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+
+                            <div id="reviewsList">
+                                @{
+                                    var reviews = ViewBag.Reviews as List<TrendyolClone.Models.Yorum>;
+                                }
+                                
+                                @if (reviews != null && reviews.Any())
+                                {
+                                    <h5 class="mb-3">Kullanıcı Yorumları (@reviews.Count)</h5>
+                                    foreach (var Yorum in reviews)
+                                    {
+                                        <div class="card mb-3">
+                                            <div class="card-body">
+                                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                                    <div class="flex-grow-1">
+                                                        <h6 class="mb-1">@Yorum.Kullanici.Ad @Yorum.Kullanici.Soyad</h6>
+                                                        <div class="mb-2">
+                                                            @for (int i = 1; i <= 5; i++)
+                                                            {
+                                                                <i class="fas fa-star @(i <= Yorum.Puan ? "text-warning" : "text-muted") fa-sm"></i>
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                    <small class="text-muted">@Yorum.OlusturmaTarihi.ToString("dd.MM.yyyy")</small>
+                                                </div>
+                                                <p class="mb-0">@Yorum.Icerik</p>
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                                else
+                                {
+                                    <div class="text-center py-5">
+                                        <i class="fas fa-comment-slash fa-3x text-muted mb-3"></i>
+                                        <p class="text-muted">Henüz değerlendirme yapılmamış. İlk yorumu siz yapın!</p>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                        
+                        <!-- Sorular & Cevaplar Tab -->
+                        <div class="tab-pane fade" id="questions" Rol="tabpanel">
+                            <div class="card mb-4">
+                                <div class="card-body">
+                                    <h5 class="card-title"><i class="fas fa-question-circle me-2"></i>Ürün Hakkında Soru Sor</h5>
+                                    <p class="text-muted small">Ürün hakkında merak ettiklerinizi sorun, satıcı veya diğer kullanıcılar cevaplasın.</p>
+                                    
+                                    @if (Context.Session.GetString("KullaniciId") != null)
+                                    {
+                                        <div class="mb-3">
+                                            <textarea class="form-control" id="questionText" rows="3" maxlength="500" placeholder="Sorunuzu buraya yazın..."></textarea>
+                                            <small class="text-muted">Maksimum 500 karakter</small>
+                                        </div>
+                                        <button type="button" class="btn btn-primary" id="askQuestionBtn">
+                                            <i class="fas fa-paper-plane me-2"></i>Soru Gönder
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <div class="alert alert-info mb-0">
+                                            <i class="fas fa-info-circle me-2"></i>
+                                            Soru sormak için <a href="@Url.Action("Login", "Account")" class="alert-link">giriş yapmalısınız</a>.
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                            
+                            <div id="questionsList">
+                                <div class="text-center py-4">
+                                    <div class="spinner-border text-primary" Rol="status">
+                                        <span class="visually-hidden">Yükleniyor...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<input type="hidden" id="maxStock" value="@Model.MevcutStok">
+<input type="hidden" id="UrunId" value="@Model.Urun.Id">
+<input type="hidden" id="selectedVariationId" value="@(Model.SecilenVaryasyon?.Id ?? 0)">
+<input type="hidden" id="variationsData" value='@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Varyasyonlar.Select(v => new { 
+    id = v.Id, 
+    renk = v.Renk, 
+    beden = v.Beden, 
+    fiyat = v.Fiyat, 
+    indirimliFiyat = v.IndirimliFiyat, 
+    stok = v.Stok,
+    anaResim = v.AnaResim,
+    stokDusukMu = v.StokDusukMu,
+    indirimdeMi = v.IndirimdeMi
+})))'>
+
+@section Scripts {
+    <script>
+        var variations = [];
+        var selectedColor = null;
+        var selectedSize = null;
+        
+        $(document).ready(function() {
+            // Varyasyon verilerini yükle
+            var variationsJson = $('#variationsData').val();
+            if (variationsJson) {
+                variations = JSON.parse(variationsJson);
+            }
+            
+            // Başlangıç seçimlerini ayarla
+            var activeColor = $('.color-option.active');
+            var activeSize = $('.size-option.active');
+            if (activeColor.length) selectedColor = activeColor.data('color');
+            if (activeSize.length) selectedSize = activeSize.data('size');
+            
+            // Renk seçimi
+            $('.color-option').click(function() {
+                $('.color-option').removeClass('active');
+                $(this).addClass('active');
+                selectedColor = $(this).data('color');
+                updateVariation();
+            });
+            
+            // Beden seçimi
+            $('.size-option').click(function() {
+                $('.size-option').removeClass('active');
+                $(this).addClass('active');
+                selectedSize = $(this).data('size');
+                updateVariation();
+            });
+            
+            // Thumbnail tıklama
+            $('.thumbnail-preview').click(function() {
+                $('.thumbnail-preview').removeClass('border-primary');
+                $(this).addClass('border-primary');
+            });
+            
+            // Miktar artır
+            $('#increaseQty').click(function() {
+                var qty = parseInt($('#Miktar').val());
+                var maxStock = parseInt($('#maxStock').val());
+                if (qty < maxStock) {
+                    $('#Miktar').val(qty + 1);
+                }
+            });
+            
+            // Miktar azalt
+            $('#decreaseQty').click(function() {
+                var qty = parseInt($('#Miktar').val());
+                if (qty > 1) {
+                    $('#Miktar').val(qty - 1);
+                }
+            });
+            
+            // Sepete ekle
+            $('#addToCartBtn').click(function() {
+                var productId = $(this).data('product-id');
+                var variationId = parseInt($('#selectedVariationId').val()) || 0;
+                var quantity = parseInt($('#Miktar').val()) || 1;
+                
+                // Varyasyon kontrolü
+                if (variations.length > 0 && variationId === 0) {
+                    showToast('Uyarı!', 'Lütfen renk ve beden seçiniz!', 'warning');
+                    return;
+                }
+                
+                $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>Ekleniyor...');
+                
+                $.post('@Url.Action("AddToCart", "Cart")', {
+                    productId: productId,
+                    variationId: variationId,
+                    quantity: quantity
+                }, function(data) {
+                    if (data.success) {
+                        $('#cart-count').text(data.cartCount);
+                        showToast('Başarılı!', data.message, 'success');
+                    } else {
+                        showToast('Hata!', data.message, 'error');
+                    }
+                    $('#addToCartBtn').prop('disabled', false).html('<i class="fas fa-shopping-cart me-2"></i>Sepete Ekle');
+                }).fail(function() {
+                    showToast('Hata!', 'Bir hata oluştu!', 'error');
+                    $('#addToCartBtn').prop('disabled', false).html('<i class="fas fa-shopping-cart me-2"></i>Sepete Ekle');
+                });
+            });
+            
+            // Favoriye ekle
+            $('.Favori-btn').click(function() {
+                var button = $(this);
+                var productId = button.data('Urun-id');
+                var icon = button.find('i');
+                var isFavorite = icon.hasClass('fas');
+                
+                var url = isFavorite 
+                    ? '@Url.Action("RemoveFromFavorites", "Account")' 
+                    : '@Url.Action("AddToFavorites", "Account")';
+                
+                $.post(url, { UrunId: productId }, function(data) {
+                    if (data.success) {
+                        if (isFavorite) {
+                            icon.removeClass('fas').addClass('far');
+                            button.removeClass('btn-danger').addClass('btn-outline-danger');
+                        } else {
+                            icon.removeClass('far').addClass('fas');
+                            button.removeClass('btn-outline-danger').addClass('btn-danger');
+                        }
+                        showToast('Başarılı!', data.message, 'success');
+                    } else {
+                        showToast('Hata!', data.message, 'error');
+                    }
+                }).fail(function() {
+                    showToast('Hata!', 'Giriş yapmalısınız!', 'error');
+                });
+            });
+
+            // Tab'a tıklandığında soruları yükle
+            $('#questions-tab').on('click', function() {
+                setTimeout(loadQuestions, 100);
+            });
+        });
+        
+        // Varyasyon güncelleme fonksiyonu
+        function updateVariation() {
+            if (variations.length === 0) return;
+            
+            // Seçilen varyasyonu bul
+            var selectedVariation = variations.find(function(v) {
+                var colorMatch = !selectedColor || v.renk === selectedColor;
+                var sizeMatch = !selectedSize || v.beden === selectedSize;
+                return colorMatch && sizeMatch;
+            });
+            
+            if (!selectedVariation) {
+                showToast('Uyarı!', 'Bu kombinasyon mevcut değil!', 'warning');
+                return;
+            }
+            
+            // Seçilen varyasyonu kaydet
+            $('#selectedVariationId').val(selectedVariation.id);
+            $('#addToCartBtn').data('variation-id', selectedVariation.id);
+            
+            // Fiyat güncelle
+            var priceHtml = '';
+            if (selectedVariation.indirimdeMi && selectedVariation.indirimliFiyat) {
+                var discount = ((selectedVariation.fiyat - selectedVariation.indirimliFiyat) / selectedVariation.fiyat * 100).toFixed(0);
+                priceHtml = '<h3 class="text-danger mb-0">' + formatPrice(selectedVariation.indirimliFiyat) + '</h3>';
+                priceHtml += '<p class="text-decoration-line-through text-muted">' + formatPrice(selectedVariation.fiyat) + '</p>';
+                priceHtml += '<p class="text-success"><i class="fas fa-tag me-1"></i>%' + discount + ' indirim</p>';
+            } else {
+                priceHtml = '<h3 class="text-primary mb-0">' + formatPrice(selectedVariation.fiyat) + '</h3>';
+            }
+            $('#currentPrice').parent().html(priceHtml);
+            
+            // Stok güncelle
+            var stockHtml = '';
+            if (selectedVariation.stok > 0) {
+                if (selectedVariation.stokDusukMu) {
+                    stockHtml = '<p class="text-warning"><i class="fas fa-exclamation-triangle me-1"></i>Son ' + selectedVariation.stok + ' adet!</p>';
+                } else {
+                    stockHtml = '<p class="text-success"><i class="fas fa-check-circle me-1"></i>Stokta (' + selectedVariation.stok + ' adet)</p>';
+                }
+                $('#Miktar').attr('max', selectedVariation.stok).val(1);
+                $('#maxStock').val(selectedVariation.stok);
+                $('#addToCartBtn').prop('disabled', false);
+            } else {
+                stockHtml = '<p class="text-danger"><i class="fas fa-times-circle me-1"></i>Stokta yok</p>';
+                $('#addToCartBtn').prop('disabled', true);
+            }
+            $('#stockInfo').html(stockHtml);
+            
+            // Ana resmi güncelle (eğer varsa)
+            if (selectedVariation.anaResim) {
+                $('#productImageCarousel .carousel-item:first img').attr('src', selectedVariation.anaResim);
+            }
+        }
+        
+        function formatPrice(price) {
+            return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(price);
+            
+            // Soru gönder
+            $('#askQuestionBtn').click(function() {
+                var question = $('#questionText').val().trim();
+                if (!question) {
+                    showToast('Uyarı!', 'Lütfen bir soru yazın!', 'error');
+                    return;
+                }
+                
+                $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>Gönderiliyor...');
+                
+                $.post('@Url.Action("AskQuestion", "Urun")', {
+                    UrunId: @Model.Urun.Id,
+                    question: question
+                }, function(data) {
+                    if (data.success) {
+                        $('#questionText').val('');
+                        showToast('Başarılı!', data.message, 'success');
+                        loadQuestions();
+                    } else {
+                        showToast('Hata!', data.message, 'error');
+                    }
+                    $('#askQuestionBtn').prop('disabled', false).html('<i class="fas fa-paper-plane me-2"></i>Soru Gönder');
+                }).fail(function() {
+                    showToast('Hata!', 'Bir hata oluştu!', 'error');
+                    $('#askQuestionBtn').prop('disabled', false).html('<i class="fas fa-paper-plane me-2"></i>Soru Gönder');
+                });
+            });
+        
+        function loadQuestions() {
+            $.get('@Url.Action("GetQuestions", "Urun")', { UrunId: @Model.Urun.Id }, function(data) {
+                if (data && data.length > 0) {
+                    var html = '<h5 class="mb-3">Sıkça Sorulan Sorular (' + data.length + ')</h5>';
+                    
+                    data.forEach(function(q) {
+                        var answerBadge = q.cevaplandi 
+                            ? '<span class="badge bg-success ms-2"><i class="fas fa-check me-1"></i>Cevaplanmış</span>'
+                            : '<span class="badge bg-warning ms-2"><i class="fas fa-clock me-1"></i>Beklemede</span>';
+                        
+                        html += '<div class="card mb-3"><div class="card-body">';
+                        html += '<h6 class="mb-1"><i class="fas fa-question-circle text-primary me-2"></i>' + q.Soru + answerBadge + '</h6>';
+                        html += '<small class="text-muted"><i class="fas fa-Kullanici me-1"></i>' + q.KullaniciAdi + ' - ';
+                        html += '<i class="fas fa-calendar me-1"></i>' + new Date(q.OlusturmaTarihi).toLocaleDateString('tr-TR') + '</small>';
+                        
+                        if (q.Cevaplar && q.Cevaplar.length > 0) {
+                            html += '<div class="mt-3">';
+                            q.Cevaplar.forEach(function(a) {
+                                var badgeClass = a.isOfficial ? 'bg-primary' : 'bg-secondary';
+                                html += '<div class="alert alert-light mb-2">';
+                                html += '<strong><i class="fas fa-reply me-1"></i>' + a.answererName + '</strong> ';
+                                html += '<span class="badge ' + badgeClass + '">' + (a.isOfficial ? 'Resmi Cevap' : 'Kullanıcı') + '</span>';
+                                html += '<p class="mb-0 mt-2">' + a.answer + '</p>';
+                                html += '<small class="text-muted">' + new Date(a.OlusturmaTarihi).toLocaleDateString('tr-TR') + '</small>';
+                                html += '</div>';
+                            });
+                            html += '</div>';
+                        }
+                        
+                        html += '</div></div>';
+                    });
+                    
+                    $('#questionsList').html(html);
+                } else {
+                    $('#questionsList').html('<div class="text-center py-5"><i class="fas fa-question-circle fa-3x text-muted mb-3"></i><p class="text-muted">Henüz soru sorulmamış. İlk soruyu siz sorun!</p></div>');
+                }
+            });
+        }
+    </script>
+}

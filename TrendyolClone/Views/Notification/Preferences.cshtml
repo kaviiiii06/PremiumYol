@@ -1,0 +1,97 @@
+@model TrendyolClone.Models.BildirimTercihi
+@{
+    ViewData["Title"] = "Bildirim Tercihleri";
+}
+
+<div class="container my-5">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-bell"></i> Bildirim Tercihleri
+                    </h4>
+                </div>
+                <div class="card-body">
+                    @if (TempData["Mesaj"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show">
+                            @TempData["Mesaj"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
+
+                    <form asp-action="UpdatePreferences" method="post">
+                        <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="KullaniciId" />
+
+                        <div class="mb-4">
+                            <h5 class="border-bottom pb-2">Bildirim Kanalları</h5>
+                            
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" asp-for="EmailBildirimleri" id="emailBildirimleri">
+                                <label class="form-check-label" for="emailBildirimleri">
+                                    <strong>Email Bildirimleri</strong>
+                                    <small class="d-block text-muted">Email ile bildirim almak istiyorum</small>
+                                </label>
+                            </div>
+
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" asp-for="SmsBildirimleri" id="smsBildirimleri">
+                                <label class="form-check-label" for="smsBildirimleri">
+                                    <strong>SMS Bildirimleri</strong>
+                                    <small class="d-block text-muted">SMS ile bildirim almak istiyorum</small>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <h5 class="border-bottom pb-2">Bildirim Türleri</h5>
+                            
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" asp-for="SiparisBildirimleri" id="siparisBildirimleri">
+                                <label class="form-check-label" for="siparisBildirimleri">
+                                    <strong>Sipariş Bildirimleri</strong>
+                                    <small class="d-block text-muted">Sipariş durumu güncellemeleri</small>
+                                </label>
+                            </div>
+
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" asp-for="KampanyaBildirimleri" id="kampanyaBildirimleri">
+                                <label class="form-check-label" for="kampanyaBildirimleri">
+                                    <strong>Kampanya Bildirimleri</strong>
+                                    <small class="d-block text-muted">İndirim ve kampanya duyuruları</small>
+                                </label>
+                            </div>
+
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" asp-for="UrunBildirimleri" id="urunBildirimleri">
+                                <label class="form-check-label" for="urunBildirimleri">
+                                    <strong>Ürün Bildirimleri</strong>
+                                    <small class="d-block text-muted">Favori ürünler ve stok güncellemeleri</small>
+                                </label>
+                            </div>
+
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" asp-for="IadeBildirimleri" id="iadeBildirimleri">
+                                <label class="form-check-label" for="iadeBildirimleri">
+                                    <strong>İade Bildirimleri</strong>
+                                    <small class="d-block text-muted">İade ve iade talebi güncellemeleri</small>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Tercihleri Kaydet
+                            </button>
+                            <a asp-controller="Account" asp-action="Profile" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left"></i> Geri Dön
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

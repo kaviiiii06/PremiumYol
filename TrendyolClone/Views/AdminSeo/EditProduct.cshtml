@@ -1,0 +1,114 @@
+@model TrendyolClone.Models.DTOs.SeoMetaDto
+@{
+    ViewData["Title"] = "SEO Düzenle";
+    var urun = ViewBag.Urun as TrendyolClone.Models.Urun;
+}
+
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">SEO Düzenle: @urun?.Ad</h3>
+                </div>
+                <div class="card-body">
+                    <form asp-action="EditProduct" method="post">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5>Temel SEO</h5>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Sayfa Başlığı (Title)</label>
+                                    <input asp-for="Baslik" class="form-control" maxlength="60" />
+                                    <small class="text-muted">Maksimum 60 karakter önerilir</small>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Meta Açıklama (Description)</label>
+                                    <textarea asp-for="Aciklama" class="form-control" rows="3" maxlength="160"></textarea>
+                                    <small class="text-muted">Maksimum 160 karakter önerilir</small>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Anahtar Kelimeler (Keywords)</label>
+                                    <input asp-for="Anahtar" class="form-control" />
+                                    <small class="text-muted">Virgülle ayırın</small>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Canonical URL</label>
+                                    <input asp-for="CanonicalUrl" class="form-control" />
+                                </div>
+
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        <input asp-for="Indexlenebilir" class="form-check-input" />
+                                        <label class="form-check-label">Arama motorlarında indexlensin</label>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        <input asp-for="TakipEdilebilir" class="form-check-input" />
+                                        <label class="form-check-label">Linkler takip edilsin</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <h5>Open Graph (Sosyal Medya)</h5>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">OG Başlık</label>
+                                    <input asp-for="OgBaslik" class="form-control" />
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">OG Açıklama</label>
+                                    <textarea asp-for="OgAciklama" class="form-control" rows="3"></textarea>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">OG Resim URL</label>
+                                    <input asp-for="OgResim" class="form-control" />
+                                    @if (!string.IsNullOrEmpty(Model.OgResim))
+                                    {
+                                        <img src="@Model.OgResim" alt="Preview" class="img-thumbnail mt-2" style="max-width: 200px;" />
+                                    }
+                                </div>
+
+                                <div class="alert alert-info">
+                                    <h6><i class="fas fa-info-circle"></i> Önizleme</h6>
+                                    <p class="mb-1"><strong id="previewTitle">@Model.Baslik</strong></p>
+                                    <p class="mb-0 text-muted small" id="previewDesc">@Model.Aciklama</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-3">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Kaydet
+                            </button>
+                            <a href="@Url.Action("Products")" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> İptal
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    // Gerçek zamanlı önizleme
+    document.getElementById('Baslik').addEventListener('input', function() {
+        document.getElementById('previewTitle').textContent = this.value;
+    });
+
+    document.getElementById('Aciklama').addEventListener('input', function() {
+        document.getElementById('previewDesc').textContent = this.value;
+    });
+</script>
+}
