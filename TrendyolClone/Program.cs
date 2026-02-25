@@ -106,10 +106,11 @@ using (var scope = app.Services.CreateScope())
     
     try
     {
-        // Migrations uygula (PostgreSQL için)
-        logger.LogInformation("Veritabanı migrations uygulanıyor...");
-        context.Database.Migrate();
-        logger.LogInformation("✓ Veritabanı migrations başarıyla uygulandı.");
+        // Veritabanını oluştur (PostgreSQL için)
+        logger.LogInformation("Veritabanı oluşturuluyor...");
+        context.Database.EnsureDeleted(); // Geçici: Mevcut DB'yi sil
+        context.Database.EnsureCreated(); // Yeni DB oluştur
+        logger.LogInformation("✓ Veritabanı başarıyla oluşturuldu.");
         
         // Sadece veritabanı boşsa seed data ekle
         if (!context.Kullanicilar.Any() || !context.Yoneticiler.Any())
