@@ -13,9 +13,19 @@ builder.Services.AddControllersWithViews()
         options.JsonSerializerOptions.PropertyNamingPolicy = null;
     });
 
-// Entity Framework bağlantısı
+// Entity Framework bağlantısı - PostgreSQL veya SQLite
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<UygulamaDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+{
+    if (connectionString?.Contains("postgresql") == true || connectionString?.Contains("postgres") == true)
+    {
+        options.UseNpgsql(connectionString);
+    }
+    else
+    {
+        options.UseSqlite(connectionString ?? "Data Source=trendyol.db");
+    }
+});
 
 // Custom Extensions
 builder.Services.AddCustomCaching();
@@ -92,16 +102,31 @@ app.MapControllerRoute(
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<UygulamaDbContext>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
     
-    // Veritabanı yoksa oluştur (EF Core tüm tabloları otomatik oluşturur)
-    context.Database.EnsureCreated();
-    
-    Console.WriteLine("✓ Veritabanı başarıyla oluşturuldu/kontrol edildi.");
-    
-    // Sadece veritabanı boşsa seed data ekle
-    if (!context.Kullanicilar.Any() || !context.Yoneticiler.Any())
+    try
     {
-        TrendyolClone.Data.VeriEkleyici.VeriEkle(context);
+        // Migrations uygula (PostgreSQL için)
+        logger.LogInformation("Veritabanı migrations uygulanıyor...");
+        context.Database.Migrate();
+        logger.LogInformation("✓ Veritabanı migrations başarıyla uygulandı.");
+        
+        // Sadece veritabanı boşsa seed data ekle
+        if (!context.Kullanicilar.Any() || !context.Yoneticiler.Any())
+        {
+            logger.LogInformation("Seed data ekleniyor...");
+            TrendyolClone.Data.VeriEkleyici.VeriEkle(context);
+            logger.LogInformation("✓ Seed data başarıyla eklendi.");
+        }
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Veritabanı başlatma sırasında hata oluştu.");
+        // Production'da hata fırlat
+        if (!app.Environment.IsDevelopment())
+        {
+            throw;
+        }
     }
 }
 
