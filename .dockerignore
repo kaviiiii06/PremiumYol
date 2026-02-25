@@ -1,0 +1,34 @@
+# Git
+.git
+.gitignore
+
+# IDE
+.vs
+.vscode
+.idea
+
+# Build outputs
+**/bin
+**/obj
+
+# Database
+*.db
+*.db-shm
+*.db-wal
+
+# Logs
+**/Logs
+*.log
+
+# Docs
+docs/
+*.md
+!TrendyolClone/*.md
+
+# Tests
+**/Tests
+
+# Docker
+**/Dockerfile
+**/.dockerignore
+**/docker-compose*
