@@ -1,0 +1,38 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+*.cache
+
+# Database
+*.db
+*.db-shm
+*.db-wal
+
+# Logs
+logs/
+*.log
+app*.log
+app-*.txt
+
+# IDE
+.vs/
+.vscode/
+.idea/
+
+# Git
+.git/
+.gitignore
+
+# Docs
+docs/
+
+# Tests
+TrendyolClone/Tests/
+
+# Migrations (opsiyonel - production'da migration çalıştırmayacaksanız)
+TrendyolClone/Migrations/
+
+# Helper files
+TrendyolClone/Add*.cs
